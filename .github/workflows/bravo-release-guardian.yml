@@ -108,11 +108,11 @@ jobs:
           Production must not be promoted based on this run until the failure is resolved.
           EOF
           )
-          ISSUE=$(gh issue list --state open --search '"[Bravo Release Guardian] Code QA failure" in:title' --json number --jq '.[0].number // empty')
+          ISSUE=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search '"[Bravo Release Guardian] Code QA failure" in:title' --json number --jq '.[0].number // empty')
           if [ -n "$ISSUE" ]; then
-            gh issue comment "$ISSUE" --body "$BODY"
+            gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY"
           else
-            gh issue create --title "$TITLE" --body "$BODY"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
           fi
 
   vercel-deployment-guard:
@@ -145,14 +145,15 @@ jobs:
             exit 0
           fi
 
-          if [ -n "$DEPLOY_URL" ]; then
-            echo "runtime_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
-          else
+          # Vercel Preview deployments may be protected and return an auth redirect.
+          # A successful Preview deployment status is therefore sufficient here.
+          # Full public runtime smoke tests are reserved for Production.
+          if [ "$DEPLOY_ENV" = "Production" ]; then
             echo "runtime_url=$PRODUCTION_URL" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Runtime smoke after successful deployment
-        if: github.event.deployment_status.state == 'success'
+      - name: Runtime smoke after successful production deployment
+        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
         shell: bash
         env:
           RUNTIME_URL: ${{ steps.deploy.outputs.runtime_url }}
@@ -172,7 +173,7 @@ jobs:
           LP_CODE=$(curl -sS -o /tmp/bravo-lp.html -w "%{http_code}" "$BASE/lp/guardian-nonexistent-slug-404")
           [ "$LP_CODE" = "404" ] || { echo "Unknown LP returned $LP_CODE"; exit 1; }
 
-          echo "Runtime smoke passed for $BASE"
+          echo "Production runtime smoke passed for $BASE"
 
       - name: Report deployment failure
         if: failure()
@@ -182,7 +183,7 @@ jobs:
         run: |
           TITLE="[Bravo Release Guardian] Vercel deployment failure"
           BODY=$(cat <<EOF
-          Bravo Release Guardian detected a failed deployment or runtime smoke check.
+          Bravo Release Guardian detected a failed deployment or production runtime smoke check.
 
           - SHA: ${GITHUB_SHA}
           - Deployment state: ${{ github.event.deployment_status.state }}
@@ -193,11 +194,11 @@ jobs:
           Do not promote this release until the deployment/runtime failure is resolved.
           EOF
           )
-          ISSUE=$(gh issue list --state open --search '"[Bravo Release Guardian] Vercel deployment failure" in:title' --json number --jq '.[0].number // empty')
+          ISSUE=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search '"[Bravo Release Guardian] Vercel deployment failure" in:title' --json number --jq '.[0].number // empty')
           if [ -n "$ISSUE" ]; then
-            gh issue comment "$ISSUE" --body "$BODY"
+            gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY"
           else
-            gh issue create --title "$TITLE" --body "$BODY"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
           fi
 
   neon-governance-drift:
@@ -289,9 +290,9 @@ jobs:
           Review the run diff before changing production code or claims. Database fixes must be tested in a temporary Neon branch first.
           EOF
           )
-          ISSUE=$(gh issue list --state open --search '"[Bravo Release Guardian] Neon governance drift detected" in:title' --json number --jq '.[0].number // empty')
+          ISSUE=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search '"[Bravo Release Guardian] Neon governance drift detected" in:title' --json number --jq '.[0].number // empty')
           if [ -n "$ISSUE" ]; then
-            gh issue comment "$ISSUE" --body "$BODY"
+            gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY"
           else
-            gh issue create --title "$TITLE" --body "$BODY"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
           fi
