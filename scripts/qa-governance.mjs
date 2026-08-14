@@ -225,9 +225,41 @@ async function testLeadValidation() {
 await testLeadValidation();
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. SSRF / Security Checks
+// 4. Rate Limiter Regression Test
 // ─────────────────────────────────────────────────────────────────────────────
-console.log("\n── 4. Security ────────────────────────────────────────────────");
+console.log("\n── 4. Rate Limiter ────────────────────────────────────────────");
+
+async function testRateLimiter() {
+  const testIp = `192.168.100.${Math.floor(Math.random() * 255)}`;
+  let lastStatus = 0;
+  
+  // The global limiter is set to 5 requests per minute.
+  // We send 6 requests from the same IP. The 6th should be 429.
+  for (let i = 1; i <= 6; i++) {
+    const r = await fetch(`${BASE}/api/leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-forwarded-for": testIp,
+      },
+      body: JSON.stringify({ nombre: `Test ${i}`, celular: "5512345678" })
+    });
+    lastStatus = r.status;
+  }
+
+  if (lastStatus === 429) {
+    ok("POST /api/leads same IP threshold → 429 (Rate limiter is working)");
+  } else {
+    fail("POST /api/leads 6th request from same IP should be 429", `got ${lastStatus}`);
+  }
+}
+
+await testRateLimiter();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. SSRF / Security Checks
+// ─────────────────────────────────────────────────────────────────────────────
+console.log("\n── 5. Security ────────────────────────────────────────────────");
 
 async function testSecurity() {
   // Webhook test with arbitrary URL → 401 (requires admin)

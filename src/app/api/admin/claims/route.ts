@@ -12,26 +12,7 @@ export async function GET() {
   try {
     await initDbSchema();
 
-    // Auto-seed from default claims if empty (first-time setup)
-    const countRes = await sql`SELECT COUNT(*) as count FROM claims_registry`;
-    const count = (countRes as any[])[0].count;
-    if (count === "0" || count === 0) {
-      for (const [id, claim] of Object.entries(defaultClaims)) {
-        // Seed with UPPERCASE status — config is now normalized
-        await sql`
-          INSERT INTO claims_registry (id, label, value, status, source, source_date, legal_approved)
-          VALUES (
-            ${id}, 
-            ${id}, 
-            ${claim.value}, 
-            ${claim.status},
-            ${claim.source}, 
-            ${claim.sourceDate || null}, 
-            ${claim.legalApproved}
-          ) ON CONFLICT DO NOTHING
-        `;
-      }
-    }
+    // Auto-seed has been moved to src/lib/db/neon.ts for global fail-closed recovery
 
     const claims = await sql`SELECT * FROM claims_registry ORDER BY id ASC`;
     return NextResponse.json(claims);

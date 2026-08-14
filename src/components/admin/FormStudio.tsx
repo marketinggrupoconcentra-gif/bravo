@@ -31,6 +31,7 @@ export function FormStudio() {
     try {
       const cached = localStorage.getItem("bravo_form_studio_config");
       if (cached) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setConfig(JSON.parse(cached));
       }
     } catch {

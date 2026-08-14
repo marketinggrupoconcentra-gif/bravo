@@ -347,12 +347,7 @@ export async function POST(req: NextRequest) {
     const apiSyncLogs = {
       meta_capi: metaCapiLog,
       google_ads: googleAdsLog,
-      crm_webhook: crmWebhookLog,
-      intelix: {
-        status: "pending",
-        responseMessage: "Sincronización con Intelix CRM iniciada…",
-        sentAt: nowIso,
-      },
+      intelix: crmWebhookLog,
     };
 
     const attributionJson = JSON.stringify(attribution || {});

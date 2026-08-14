@@ -43,6 +43,7 @@ export default function AdminDashboardPage() {
       router.replace("/acceso");
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsAuthChecked(true);
   }, [router]);
 
@@ -61,6 +62,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!isAuthChecked) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshLogs();
     const interval = setInterval(refreshLogs, 4000);
     return () => clearInterval(interval);

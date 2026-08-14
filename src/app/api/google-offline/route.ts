@@ -28,7 +28,9 @@ export async function POST(req: NextRequest) {
         const formattedTime = dateObj.toISOString().replace("T", " ").substring(0, 19) + "+00:00";
 
         return {
-          google_click_id: lead.attribution?.gclid || "",
+          gclid: lead.attribution?.gclid || undefined,
+          gbraid: lead.attribution?.gbraid || undefined,
+          wbraid: lead.attribution?.wbraid || undefined,
           conversion_name: conversionAction || "Bravo_Lead_Calificado",
           conversion_date_time: formattedTime,
           user_identifiers: [

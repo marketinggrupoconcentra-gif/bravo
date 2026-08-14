@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { claimsRegistry as defaultClaims } from "@/config/claims";
 
 let connectionString = process.env.DATABASE_URL;
 
@@ -157,6 +158,26 @@ export async function initDbSchema() {
     `;
 
     schemaInitialized = true;
+
+    // Auto-seed from default claims if empty (first-time setup)
+    const countRes = await sql`SELECT COUNT(*) as count FROM claims_registry`;
+    const count = (countRes as any[])[0].count;
+    if (count === "0" || count === 0) {
+      for (const [id, claim] of Object.entries(defaultClaims)) {
+        await sql`
+          INSERT INTO claims_registry (id, label, value, status, source, source_date, legal_approved)
+          VALUES (
+            ${id}, 
+            ${id}, 
+            ${claim.value}, 
+            ${claim.status},
+            ${claim.source}, 
+            ${claim.sourceDate || null}, 
+            ${claim.legalApproved}
+          ) ON CONFLICT DO NOTHING
+        `;
+      }
+    }
   } catch (error) {
     console.error("[Neon DB] Error initializing tables:", error);
     throw error;

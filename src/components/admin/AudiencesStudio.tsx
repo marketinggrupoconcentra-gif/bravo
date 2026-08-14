@@ -127,13 +127,15 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
 
   // 3. Export Google Ads Offline Conversions CSV
   const handleDownloadGoogleOfflineCsv = () => {
-    const headers = "Google Click ID,Conversion Name,Conversion Time\n";
+    const headers = "Google Click ID,GBRAID,WBRAID,Conversion Name,Conversion Time\n";
     const rows = filteredAudienceLeads
       .filter((lead) => lead.attribution?.gclid || lead.attribution?.gbraid || lead.attribution?.wbraid)
       .map((lead) => {
-        const gclid = lead.attribution?.gclid || lead.attribution?.gbraid || lead.attribution?.wbraid || "";
+        const gclid = lead.attribution?.gclid || "";
+        const gbraid = lead.attribution?.gbraid || "";
+        const wbraid = lead.attribution?.wbraid || "";
         const dateStr = new Date(lead.submittedAt || Date.now()).toISOString().replace("T", " ").substring(0, 19) + "+00:00";
-        return `"${gclid}","${googleConversionAction}","${dateStr}"`;
+        return `"${gclid}","${gbraid}","${wbraid}","${googleConversionAction}","${dateStr}"`;
       })
       .join("\n");
 
@@ -421,7 +423,7 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
                   <svg className="w-8 h-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-[13px]">Selecciona un expediente y presiona "Disparar Evento CAPI" para ver la respuesta del servidor en tiempo real.</span>
+                  <span className="text-[13px]">Selecciona un expediente y presiona &quot;Disparar Evento CAPI&quot; para ver la respuesta del servidor en tiempo real.</span>
                 </div>
               )}
             </div>

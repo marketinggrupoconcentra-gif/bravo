@@ -59,6 +59,7 @@ function PersonalizedGraciasContent() {
     const finalMonto = qMonto || sData.amount || "$120,000 - $250,000 MXN";
     const finalFolio = sData.folio || `BR-${Math.floor(100000 + Math.random() * 900000)}`;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLead({
       nombre: finalNombre,
       amount: finalMonto,

@@ -18,10 +18,6 @@ export function ClaimsStudio() {
   const [editingClaim, setEditingClaim] = useState<Claim | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchClaims();
-  }, []);
-
   const fetchClaims = async () => {
     try {
       const res = await fetch("/api/admin/claims");
@@ -29,12 +25,17 @@ export function ClaimsStudio() {
         const data = await res.json();
         setClaims(data);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("Failed to fetch claims:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchClaims();
+  }, []);
 
   const handleSave = async () => {
     if (!editingClaim) return;
