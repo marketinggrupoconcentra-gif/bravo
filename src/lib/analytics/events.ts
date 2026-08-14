@@ -48,9 +48,9 @@ export interface OutboundClickParams extends BaseEventParams {
 export interface CalculatorParams extends BaseEventParams {
   amount: number;
   months: number;
-  discount_percent: number;
-  estimated_settlement: number;
-  monthly_savings: number;
+  discount_percent?: number;
+  estimated_settlement?: number;
+  monthly_savings?: number;
   action_type: "amount_change" | "term_change" | "preset_chip" | "submit_with_amount";
 }
 

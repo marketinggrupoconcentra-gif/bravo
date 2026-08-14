@@ -1,25 +1,19 @@
 import { NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
-import { cookies } from "next/headers";
+import { requireAdminSession, getAdminIdentityLabel } from "@/lib/auth/admin";
 import { claimsRegistry as defaultClaims } from "@/config/claims";
 
-async function isAuthenticated() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  return token === process.env.ADMIN_SECRET_KEY;
-}
-
-export async function GET(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET() {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     await initDbSchema();
     
     // Auto-seed from default claims if empty
     const countRes = await sql`SELECT COUNT(*) as count FROM claims_registry`;
-    if (countRes[0].count === "0" || countRes[0].count === 0) {
+    const count = (countRes as any[])[0].count;
+    if (count === "0" || count === 0) {
       for (const [id, claim] of Object.entries(defaultClaims)) {
         await sql`
           INSERT INTO claims_registry (id, label, value, status, source, source_date, legal_approved)
@@ -45,9 +39,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     const { id, value, status, source, legal_approved } = await req.json();
@@ -58,9 +51,8 @@ export async function POST(req: Request) {
     await initDbSchema();
 
     const previous = await sql`SELECT * FROM claims_registry WHERE id = ${id}`;
-    const previousValue = previous.length > 0 ? previous[0] : null;
+    const previousValue = (previous as any[]).length > 0 ? (previous as any[])[0] : null;
 
-    // Convert booleans for neon
     const isApproved = legal_approved === true || legal_approved === "true" || legal_approved === 1;
 
     if (previousValue) {
@@ -89,7 +81,7 @@ export async function POST(req: Request) {
         'claims',
         ${previousValue ? JSON.stringify(previousValue) : null}::jsonb,
         ${JSON.stringify(newValue)}::jsonb,
-        'Administrador del Sistema'
+        ${getAdminIdentityLabel()}
       )
     `;
 

@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
-import { cookies } from "next/headers";
-
-async function isAuthenticated() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  return token === process.env.ADMIN_SECRET_KEY;
-}
+import { requireAdminSession, getAdminIdentityLabel } from "@/lib/auth/admin";
 
 export async function GET(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   const { searchParams } = new URL(req.url);
   const key = searchParams.get("key");
@@ -21,13 +14,13 @@ export async function GET(req: Request) {
 
     if (key) {
       const result = await sql`SELECT value FROM admin_config WHERE key = ${key}`;
-      if (result.length > 0) {
-        return NextResponse.json(result[0].value);
+      if ((result as any[]).length > 0) {
+        return NextResponse.json((result as any[])[0].value);
       }
       return NextResponse.json(null);
     } else {
       const result = await sql`SELECT key, value FROM admin_config`;
-      const configMap = result.reduce((acc: any, row: any) => {
+      const configMap = (result as any[]).reduce((acc: any, row: any) => {
         acc[row.key] = row.value;
         return acc;
       }, {});
@@ -40,9 +33,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     const { key, value } = await req.json();
@@ -52,9 +44,9 @@ export async function POST(req: Request) {
 
     await initDbSchema();
 
-    // Log the audit
+    // Fetch previous for audit
     const previous = await sql`SELECT value FROM admin_config WHERE key = ${key}`;
-    const previousValue = previous.length > 0 ? previous[0].value : null;
+    const previousValue = (previous as any[]).length > 0 ? (previous as any[])[0].value : null;
 
     await sql`
       INSERT INTO admin_config (key, value, updated_at)
@@ -70,7 +62,7 @@ export async function POST(req: Request) {
         ${key},
         ${previousValue ? JSON.stringify(previousValue) : null}::jsonb,
         ${JSON.stringify(value)}::jsonb,
-        'Administrador del Sistema'
+        ${getAdminIdentityLabel()}
       )
     `;
 

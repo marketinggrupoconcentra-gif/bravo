@@ -73,7 +73,7 @@ export function SmartExitIntentModal() {
         <div className="p-4 bg-[#FAF8FB] rounded-2xl border border-[#E7E3EC] flex flex-col gap-2 text-[12.5px] text-[#3A3344]">
           <div className="flex items-center gap-2">
             <CheckIcon size={16} className="text-[#157A5A] shrink-0" />
-            <span>Descuentos de hasta el 70% en saldos bancarios.</span>
+            <span>Negociación de saldos directamente con tus acreedores.</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckIcon size={16} className="text-[#157A5A] shrink-0" />

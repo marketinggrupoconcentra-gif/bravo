@@ -27,12 +27,17 @@ export function FloatingWhatsAppWidget() {
     return null;
   }
 
-  if (!config.floatingWidgetEnabled || !hasScrolled) {
+  // Only render if widget is enabled AND a real WhatsApp number is configured
+  if (!config.floatingWidgetEnabled || !config.whatsappNumber || !hasScrolled) {
     return null;
   }
 
   const isBottomLeft = config.floatingWidgetPosition === "bottom-left";
   const whatsappUrl = getWhatsAppUrl();
+
+  // Guard: if URL couldn't be built (e.g., bad number), don't render
+  if (!whatsappUrl) return null;
+
 
   const handleOpenChat = () => {
     logUserAction("whatsapp_floating_click", {

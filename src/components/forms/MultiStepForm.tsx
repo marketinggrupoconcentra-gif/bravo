@@ -11,6 +11,7 @@ import {
 } from "@/config/forms";
 import { trackEvent } from "@/lib/analytics/track";
 import { checkRateLimit, clearRateLimit } from "@/lib/utils/rateLimiter";
+import { getLeadAttributionPayload } from "@/lib/attribution/capture";
 import {
   CreditCardIcon,
   PersonalLoanIcon,
@@ -224,7 +225,7 @@ export function MultiStepForm() {
           email: formData.email || "",
           device: deviceType,
           referrer: referrerVal,
-          attribution: typeof window !== "undefined" && (window as any).bravoAttribution ? (window as any).bravoAttribution : {},
+          attribution: getLeadAttributionPayload(),
         }),
       });
 
@@ -254,8 +255,9 @@ export function MultiStepForm() {
       // Clear rate limit after successful submission (allow fresh submit on /gracias revisit)
       clearRateLimit("form_submit");
 
-      // Redirect to /gracias
-      const redirectUrl = data.redirectUrl || "/gracias";
+      // Redirect to /gracias — only allow internal paths (never follow external redirect from API)
+      const rawRedirect = data.redirectUrl || "/gracias";
+      const redirectUrl = rawRedirect.startsWith("/") ? rawRedirect : "/gracias";
       router.push(redirectUrl);
     } catch (err: any) {
       console.error("[Form] Submit error:", err);

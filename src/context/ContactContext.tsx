@@ -22,23 +22,26 @@ export interface ContactChannelsConfig {
   twitterUrl: string;
 }
 
+// Safe defaults: all channels start as NOT CONFIGURED (empty strings).
+// Floating widget is off by default until an admin configures a real number.
+// Public components MUST check isChannelConfigured() before rendering any channel.
 export const DEFAULT_CONTACT_CONFIG: ContactChannelsConfig = {
-  whatsappNumber: "5512345678",
+  whatsappNumber: "",
   whatsappCountryCode: "+52",
-  whatsappFormatted: "+52 55 1234 5678",
-  whatsappGreeting: "Hola, me gustaría revisar mis opciones para liquidar mis deudas con descuento con Bravo México.",
-  floatingWidgetEnabled: true,
+  whatsappFormatted: "",
+  whatsappGreeting: "Hola, me gustaría revisar mis opciones para liquidar mis deudas con Bravo México.",
+  floatingWidgetEnabled: false, // Off until a real number is configured
   floatingWidgetPosition: "bottom-right",
   floatingWidgetText: "¿Dudas con tus deudas? Escríbenos",
   supportPhone: "",
-  supportEmail: "atencion@bravo.mx",
-  businessHours: "Lunes a Viernes 9:00 a 19:00, Sábados 9:00 a 14:00 (Hora CDMX)",
-  youtubeUrl: "https://youtube.com/@bravomexico",
-  facebookUrl: "https://facebook.com/bravomexico",
-  instagramUrl: "https://instagram.com/bravomexico",
-  tiktokUrl: "https://tiktok.com/@bravomexico",
-  linkedinUrl: "https://linkedin.com/company/bravomexico",
-  twitterUrl: "https://x.com/bravomexico",
+  supportEmail: "",
+  businessHours: "",
+  youtubeUrl: "",
+  facebookUrl: "",
+  instagramUrl: "",
+  tiktokUrl: "",
+  linkedinUrl: "",
+  twitterUrl: "",
 };
 
 const STORAGE_KEY = "bravo_contact_channels_config";
@@ -47,6 +50,7 @@ interface ContactContextType {
   config: ContactChannelsConfig;
   updateConfig: (updates: Partial<ContactChannelsConfig>) => void;
   getWhatsAppUrl: (customText?: string) => string;
+  isChannelConfigured: (channel: keyof ContactChannelsConfig) => boolean;
 }
 
 const ContactContext = createContext<ContactContextType | null>(null);
@@ -57,58 +61,79 @@ export function ContactChannelsProvider({ children }: { children: React.ReactNod
   useEffect(() => {
     async function fetchConfig() {
       try {
-        // Try local storage cache first for instant load
-        const cached = localStorage.getItem(STORAGE_KEY);
-        if (cached) {
-          setConfig((prev) => ({ ...prev, ...JSON.parse(cached) }));
-        }
-
+        // 1. Always try server-side config first (source of truth)
         const res = await fetch("/api/config?key=contact_channels");
         if (res.ok) {
           const { success, data } = await res.json();
           if (success && data) {
-            setConfig((prev) => {
-              const updated = { ...prev, ...data };
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-              return updated;
-            });
+            setConfig((prev) => ({ ...prev, ...data }));
+            // Cache for instant load on next visit — but server always wins
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_CONTACT_CONFIG, ...data }));
+            } catch {}
+            return;
           }
         }
+
+        // 2. Fallback to local cache only if server unavailable
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          // Guard: never restore a placeholder phone from cache
+          if (parsed.whatsappNumber === "5512345678" || parsed.whatsappFormatted?.includes("1234 5678")) {
+            // Stale placeholder — discard
+            localStorage.removeItem(STORAGE_KEY);
+            return;
+          }
+          setConfig((prev) => ({ ...prev, ...parsed }));
+        }
       } catch (err) {
-        console.warn("[ContactContext] using default/cached config:", err);
+        console.warn("[ContactContext] Could not load config:", err);
       }
     }
-    
+
     fetchConfig();
   }, []);
 
   const updateConfig = async (updates: Partial<ContactChannelsConfig>) => {
-    // 1. Optimistic update
     const updated = { ...config, ...updates };
     setConfig(updated);
-    
+
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      
-      // 2. Persist to Postgres via Admin API
+      // Persist to Postgres via Admin API (source of truth)
       await fetch("/api/admin/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "contact_channels", value: updated }),
       });
+      // Update local cache after server confirms
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     } catch (err) {
       console.warn("Failed to save contact channels to DB", err);
     }
   };
 
-  const getWhatsAppUrl = (customText?: string) => {
+  const getWhatsAppUrl = (customText?: string): string => {
+    if (!config.whatsappNumber) return "";
     const rawNumber = `${config.whatsappCountryCode}${config.whatsappNumber}`.replace(/[^0-9]/g, "");
+    if (!rawNumber) return "";
     const message = encodeURIComponent(customText || config.whatsappGreeting);
     return `https://wa.me/${rawNumber}?text=${message}`;
   };
 
+  /**
+   * Check if a specific channel has been configured with a real non-empty value.
+   * Public components must use this to avoid rendering unconfigured placeholders.
+   */
+  const isChannelConfigured = (channel: keyof ContactChannelsConfig): boolean => {
+    const val = config[channel];
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.trim().length > 0;
+    return false;
+  };
+
   return (
-    <ContactContext.Provider value={{ config, updateConfig, getWhatsAppUrl }}>
+    <ContactContext.Provider value={{ config, updateConfig, getWhatsAppUrl, isChannelConfigured }}>
       {children}
     </ContactContext.Provider>
   );
@@ -120,11 +145,8 @@ export function useContactChannels() {
     return {
       config: DEFAULT_CONTACT_CONFIG,
       updateConfig: () => {},
-      getWhatsAppUrl: (customText?: string) => {
-        const rawNumber = `${DEFAULT_CONTACT_CONFIG.whatsappCountryCode}${DEFAULT_CONTACT_CONFIG.whatsappNumber}`.replace(/[^0-9]/g, "");
-        const message = encodeURIComponent(customText || DEFAULT_CONTACT_CONFIG.whatsappGreeting);
-        return `https://wa.me/${rawNumber}?text=${message}`;
-      },
+      getWhatsAppUrl: () => "",
+      isChannelConfigured: () => false,
     };
   }
   return context;

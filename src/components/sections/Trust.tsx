@@ -2,13 +2,13 @@ import React from "react";
 
 interface TrustProps {
   title?: string;
-  items: {
+  items?: {
     value: string;
     label: string;
   }[];
 }
 
-export function Trust({ title, items }: TrustProps) {
+export function Trust({ title, items = [] }: TrustProps) {
   return (
     <section className="py-12 bg-white border-y border-gray-100">
       <div className="container mx-auto px-4 max-w-[--container-max]">

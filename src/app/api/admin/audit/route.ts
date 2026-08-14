@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
-import { cookies } from "next/headers";
+import { requireAdminSession } from "@/lib/auth/admin";
 
-async function isAuthenticated() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  return token === process.env.ADMIN_SECRET_KEY;
-}
-
-export async function GET(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET() {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     await initDbSchema();

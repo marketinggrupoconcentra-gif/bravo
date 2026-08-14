@@ -74,7 +74,8 @@ export async function POST(req: NextRequest) {
       device,
       referrer,
       attribution,
-      webhookConfig,
+      // webhookConfig is intentionally NOT accepted from the browser.
+      // The server decides all integration destinations. Open redirect risk.
     } = body;
 
     if (!folio || !nombre || !celular) {
@@ -284,18 +285,10 @@ export async function POST(req: NextRequest) {
         created_at AS "submittedAt";
     `;
 
-    const savedLead = inserted[0];
+    const savedLead = (inserted as any[])[0];
 
-
-
-    // Resolve redirection
-    const redirectUrl =
-      webhookConfig?.customRedirectUrl && webhookConfig.customRedirectUrl.startsWith("http")
-        ? webhookConfig.customRedirectUrl
-            .replace("{folio}", encodeURIComponent(savedLead.folio))
-            .replace("{lead_id}", encodeURIComponent(savedLead.id))
-            .replace("{nombre}", encodeURIComponent(savedLead.nombre))
-        : "/gracias";
+    // Redirect is always an internal approved route — never a browser-supplied URL
+    const redirectUrl = `/gracias`;
 
     return NextResponse.json({
       success: true,

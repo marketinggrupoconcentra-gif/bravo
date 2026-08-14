@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
-import { cookies } from "next/headers";
+import { requireAdminSession, getAdminIdentityLabel } from "@/lib/auth/admin";
 
-async function isAuthenticated() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  return token === process.env.ADMIN_SECRET_KEY;
-}
-
-export async function GET(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET() {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     await initDbSchema();
@@ -24,9 +17,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     const data = await req.json();
@@ -38,9 +30,9 @@ export async function POST(req: Request) {
 
     await initDbSchema();
 
-    // Log the audit
+    // Log the previous state for audit
     const previous = await sql`SELECT * FROM landing_pages WHERE slug = ${slug}`;
-    const previousValue = previous.length > 0 ? previous[0] : null;
+    const previousValue = (previous as any[]).length > 0 ? (previous as any[])[0] : null;
 
     await sql`
       INSERT INTO landing_pages (slug, status, traffic_source, campaign, headline, subheadline, cta_text, form_variant, updated_at)
@@ -64,7 +56,7 @@ export async function POST(req: Request) {
         ${slug},
         ${previousValue ? JSON.stringify(previousValue) : null}::jsonb,
         ${JSON.stringify(data)}::jsonb,
-        'Administrador del Sistema'
+        ${getAdminIdentityLabel()}
       )
     `;
 
@@ -76,9 +68,8 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     const { searchParams } = new URL(req.url);

@@ -96,35 +96,8 @@ export function logFormSubmission(
       // ignore
     }
 
-    // Read stored form studio webhook configuration if not passed explicitly
-    let activeWebhookConfig = customWebhookConfig;
-    if (!activeWebhookConfig) {
-      try {
-        const rawFormConfig = localStorage.getItem("bravo_form_studio_config");
-        if (rawFormConfig) {
-          const parsed = JSON.parse(rawFormConfig);
-          if (parsed.webhookEnabled && parsed.webhookUrl) {
-            const headersObj: Record<string, string> = {};
-            if (Array.isArray(parsed.webhookHeaders)) {
-              parsed.webhookHeaders.forEach((h: { key: string; value: string }) => {
-                if (h.key && h.value) headersObj[h.key] = h.value;
-              });
-            }
-            activeWebhookConfig = {
-              enabled: true,
-              endpointUrl: parsed.webhookUrl,
-              method: parsed.webhookMethod || "POST",
-              headers: headersObj,
-              customRedirectUrl: parsed.customRedirectEnabled ? parsed.customRedirectUrl : undefined,
-            };
-          }
-        }
-      } catch {
-        // ignore
-      }
-    }
-
     // Persist to Neon Postgres DB via API
+    // webhookConfig is intentionally NOT sent — server decides integration destinations.
     fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -139,7 +112,6 @@ export function logFormSubmission(
         device: record.device,
         referrer: record.referrer,
         attribution: record.attribution,
-        webhookConfig: activeWebhookConfig,
       }),
     }).catch((err) => console.warn("[Neon Sync] Form submission fallback to local:", err));
   }

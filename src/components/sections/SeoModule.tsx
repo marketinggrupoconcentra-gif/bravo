@@ -72,7 +72,7 @@ export function SeoModule() {
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#5B2C72] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
-              SOLUCIÓN RECONOCIDA EN MÉXICO
+              SOLUCIÓN REGULADA EN MÉXICO
             </div>
           </div>
 
@@ -90,7 +90,7 @@ export function SeoModule() {
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#157A5A] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
-              FONDO PROTEGIDO
+              TU DINERO EN CUENTA PROPIA
             </div>
           </div>
 
@@ -191,7 +191,7 @@ export function SeoModule() {
                     </div>
                   </td>
                   <td className="p-4 font-extrabold text-[#157A5A]">
-                    Ahorro mensual sin intereses sobre la marcha (~52% a 68% descuento)
+                    Descuento negociado según condiciones del caso, sin intereses en marcha
                   </td>
                   <td className="p-4 font-bold text-[#5B2C72]">
                     Asesor 1 a 1 + Negociación activa con acreedores
@@ -219,10 +219,9 @@ export function SeoModule() {
             <div className="bg-[#F5EDF9] p-4 rounded-[16px] border-2 border-[#5B2C72] flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <span className="font-extrabold text-[#5B2C72]">Programa Bravo México:</span>
-                <span className="text-[12px] font-bold bg-[#157A5A] text-white px-2 py-0.5 rounded-full">Recomendado</span>
               </div>
               <span className="text-[#17131F] font-semibold">
-                Descuento de hasta 65%, ahorro propio a tu ritmo y carta finiquito formal.
+                Descuento negociado directamente con el acreedor y carta finiquito formal.
               </span>
             </div>
           </div>
