@@ -161,8 +161,15 @@ export function AdminSidebar({
             </div>
           ) : (
             <Link href="/" className="w-full flex justify-center hover:opacity-90">
-              <div className="w-9 h-9 rounded-xl bg-[#5B2C72] flex items-center justify-center font-black text-white text-[16px] border border-[#AB6CCA]/50 shadow-sm">
-                B
+              <div className="w-10 h-10 rounded-xl bg-[#170B1F] flex items-center justify-center border border-[#5B2C72]/50 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/bravo-v-icon.svg"
+                  alt="Bravo"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
               </div>
             </Link>
           )}

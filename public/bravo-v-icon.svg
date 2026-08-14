@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="vGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#793E94"/>
+      <stop offset="100%" stop-color="#5ECBDB"/>
+    </linearGradient>
+  </defs>
+  <!-- V shape: left stroke violet, right stroke cyan, matching logo -->
+  <path d="M5 6 L16 26 L27 6" stroke="url(#vGrad)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

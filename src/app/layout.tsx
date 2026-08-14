@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   title: "Bravo México | Programa de Ahorro y Negociación de Deudas",
   description:
     "Revisamos tu situación y te explicamos alternativas reales para liquidar tus deudas en México sin comprometer tu patrimonio.",
+  icons: {
+    icon: "/bravo-v-icon.svg",
+    shortcut: "/bravo-v-icon.svg",
+    apple: "/bravo-v-icon.svg",
+  },
 };
 
 import { ScrollObserver } from "@/components/animations/ScrollObserver";
