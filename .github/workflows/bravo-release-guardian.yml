@@ -1,0 +1,297 @@
+name: Bravo Release Guardian
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  deployment_status:
+  workflow_dispatch:
+  schedule:
+    # Neon does not expose a generic database-change webhook in this integration.
+    # This is a near-real-time drift fallback for governed DB state only.
+    - cron: "*/10 * * * *"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  deployments: read
+  checks: read
+
+concurrency:
+  group: bravo-release-guardian-${{ github.event_name }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "10.30.3"
+  PRODUCTION_URL: "https://bravo-virid.vercel.app"
+
+jobs:
+  code-qa:
+    name: Code / Governance QA
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ADMIN_SECRET_KEY: ${{ secrets.ADMIN_SECRET_KEY }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E
+        run: pnpm test:e2e
+
+      - name: Governance QA
+        shell: bash
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$ADMIN_SECRET_KEY" ]; then
+            echo "::warning::DATABASE_URL or ADMIN_SECRET_KEY is not configured in GitHub Actions secrets. Governance QA skipped."
+            echo "### Governance QA" >> "$GITHUB_STEP_SUMMARY"
+            echo "Skipped because required GitHub Actions secrets are not configured." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          pnpm dev > /tmp/bravo-guardian-dev.log 2>&1 &
+          DEV_PID=$!
+          trap 'kill $DEV_PID 2>/dev/null || true' EXIT
+
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          pnpm test:governance
+
+      - name: Report code QA failure
+        if: failure() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TITLE="[Bravo Release Guardian] Code QA failure"
+          BODY=$(cat <<EOF
+          Bravo Release Guardian detected a failed code/governance check.
+
+          - Event: ${GITHUB_EVENT_NAME}
+          - SHA: ${GITHUB_SHA}
+          - Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+
+          Production must not be promoted based on this run until the failure is resolved.
+          EOF
+          )
+          ISSUE=$(gh issue list --state open --search '"[Bravo Release Guardian] Code QA failure" in:title' --json number --jq '.[0].number // empty')
+          if [ -n "$ISSUE" ]; then
+            gh issue comment "$ISSUE" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+
+  vercel-deployment-guard:
+    name: Vercel Deployment Guard
+    if: github.event_name == 'deployment_status'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Inspect deployment status
+        id: deploy
+        shell: bash
+        env:
+          DEPLOY_STATE: ${{ github.event.deployment_status.state }}
+          DEPLOY_URL: ${{ github.event.deployment_status.environment_url }}
+          TARGET_URL: ${{ github.event.deployment_status.target_url }}
+          DEPLOY_ENV: ${{ github.event.deployment.environment }}
+        run: |
+          echo "Deployment state: $DEPLOY_STATE"
+          echo "Environment: $DEPLOY_ENV"
+          echo "Environment URL: $DEPLOY_URL"
+          echo "Target URL: $TARGET_URL"
+
+          if [ "$DEPLOY_STATE" = "failure" ] || [ "$DEPLOY_STATE" = "error" ]; then
+            echo "deployment_failed=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          if [ "$DEPLOY_STATE" != "success" ]; then
+            echo "Deployment is not terminal-success yet; no runtime smoke needed."
+            exit 0
+          fi
+
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "runtime_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          else
+            echo "runtime_url=$PRODUCTION_URL" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Runtime smoke after successful deployment
+        if: github.event.deployment_status.state == 'success'
+        shell: bash
+        env:
+          RUNTIME_URL: ${{ steps.deploy.outputs.runtime_url }}
+        run: |
+          set -euo pipefail
+          BASE="${RUNTIME_URL%/}"
+
+          HOME_CODE=$(curl -L -sS -o /tmp/bravo-home.html -w "%{http_code}" "$BASE/")
+          [ "$HOME_CODE" = "200" ] || { echo "Home returned $HOME_CODE"; exit 1; }
+
+          LEADS_CODE=$(curl -sS -o /tmp/bravo-leads.json -w "%{http_code}" "$BASE/api/leads")
+          [ "$LEADS_CODE" = "401" ] || { echo "Unauthenticated /api/leads returned $LEADS_CODE"; exit 1; }
+
+          CLAIMS_CODE=$(curl -sS -o /tmp/bravo-claims.json -w "%{http_code}" "$BASE/api/admin/claims")
+          [ "$CLAIMS_CODE" = "401" ] || { echo "Unauthenticated /api/admin/claims returned $CLAIMS_CODE"; exit 1; }
+
+          LP_CODE=$(curl -sS -o /tmp/bravo-lp.html -w "%{http_code}" "$BASE/lp/guardian-nonexistent-slug-404")
+          [ "$LP_CODE" = "404" ] || { echo "Unknown LP returned $LP_CODE"; exit 1; }
+
+          echo "Runtime smoke passed for $BASE"
+
+      - name: Report deployment failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TITLE="[Bravo Release Guardian] Vercel deployment failure"
+          BODY=$(cat <<EOF
+          Bravo Release Guardian detected a failed deployment or runtime smoke check.
+
+          - SHA: ${GITHUB_SHA}
+          - Deployment state: ${{ github.event.deployment_status.state }}
+          - Environment: ${{ github.event.deployment.environment }}
+          - URL: ${{ github.event.deployment_status.environment_url }}
+          - Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+
+          Do not promote this release until the deployment/runtime failure is resolved.
+          EOF
+          )
+          ISSUE=$(gh issue list --state open --search '"[Bravo Release Guardian] Vercel deployment failure" in:title' --json number --jq '.[0].number // empty')
+          if [ -n "$ISSUE" ]; then
+            gh issue comment "$ISSUE" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+
+  neon-governance-drift:
+    name: Neon Governance Drift Guard
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore previous governed DB snapshot
+        if: env.DATABASE_URL != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: .guardian/neon-last.json
+          key: bravo-neon-governance-${{ github.run_id }}
+          restore-keys: |
+            bravo-neon-governance-
+
+      - name: Capture governed Neon snapshot
+        id: neon
+        shell: bash
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::DATABASE_URL is not configured in GitHub Actions secrets. Neon drift guard skipped."
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          mkdir -p .guardian
+          node scripts/guardian-neon-snapshot.mjs > .guardian/neon-current.json
+
+          echo "### Neon governance snapshot" >> "$GITHUB_STEP_SUMMARY"
+          cat .guardian/neon-current.json >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f .guardian/neon-last.json ]; then
+            if cmp -s .guardian/neon-last.json .guardian/neon-current.json; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "No governed Neon drift detected."
+            else
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "Governed Neon drift detected."
+              diff -u .guardian/neon-last.json .guardian/neon-current.json || true
+            fi
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No previous snapshot found; establishing baseline."
+          fi
+
+          cp .guardian/neon-current.json .guardian/neon-last.json
+
+      - name: Save governed DB snapshot
+        if: env.DATABASE_URL != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .guardian/neon-last.json
+          key: bravo-neon-governance-${{ github.run_id }}
+
+      - name: Report governed Neon drift
+        if: steps.neon.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TITLE="[Bravo Release Guardian] Neon governance drift detected"
+          BODY=$(cat <<EOF
+          Bravo Release Guardian detected a change in governed Neon state (claims/schema fingerprint).
+
+          - SHA used by checker: ${GITHUB_SHA}
+          - Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+
+          Review the run diff before changing production code or claims. Database fixes must be tested in a temporary Neon branch first.
+          EOF
+          )
+          ISSUE=$(gh issue list --state open --search '"[Bravo Release Guardian] Neon governance drift detected" in:title' --json number --jq '.[0].number // empty')
+          if [ -n "$ISSUE" ]; then
+            gh issue comment "$ISSUE" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
