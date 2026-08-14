@@ -213,6 +213,11 @@ export async function POST(req: NextRequest) {
       meta_capi: metaCapiLog,
       google_ads: googleAdsLog,
       crm_webhook: crmWebhookLog,
+      intelix: {
+        status: "pending",
+        responseMessage: "Sincronización con Intelix CRM iniciada…",
+        sentAt: nowIso,
+      },
     };
 
     const attributionJson = JSON.stringify(attribution || {});
@@ -271,6 +276,34 @@ export async function POST(req: NextRequest) {
     `;
 
     const savedLead = inserted[0];
+
+    // =========================================================================
+    // 4. Async Intelix CRM Dispatch (non-blocking, result written to DB)
+    // =========================================================================
+    const intelixPayload = {
+      folio,
+      nombre,
+      celular,
+      email: email || "",
+      institucion: institucion || "Institución bancaria",
+      monto: monto || "Más de $50,000 MXN",
+      tipoDeuda: tipoDeuda || "Tarjeta de crédito",
+      device: device || "Escritorio",
+      referrer: referrer || "Directo",
+      attribution: attribution || {},
+    };
+
+    // Fire-and-don't-await: Intelix call runs after response is sent
+    const intelixBaseUrl =
+      req.nextUrl.origin || `https://${req.headers.get("host") || "localhost:3000"}`;
+
+    fetch(`${intelixBaseUrl}/api/intelix`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(intelixPayload),
+    }).catch((err) =>
+      console.warn("[Intelix] Background sync error:", err?.message)
+    );
 
     // Resolve redirection
     const redirectUrl =

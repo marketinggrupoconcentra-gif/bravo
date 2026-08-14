@@ -10,7 +10,7 @@ import {
   getDropdownPlaceholder,
 } from "@/config/forms";
 import { trackEvent } from "@/lib/analytics/track";
-import { logFormSubmission } from "@/lib/telemetry/logger";
+import { checkRateLimit, clearRateLimit } from "@/lib/utils/rateLimiter";
 import {
   CreditCardIcon,
   PersonalLoanIcon,
@@ -40,6 +40,7 @@ export function MultiStepForm() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const router = useRouter();
 
   // Load custom Form Studio Config if defined
@@ -144,20 +145,28 @@ export function MultiStepForm() {
     setStep((s) => s - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isStepValid) return;
+    if (!isStepValid || isSubmitting) return;
+
     setIsSubmitting(true);
+    setSubmitError(null);
     trackEvent("form_submit_attempt", { form_id: "prequal" });
 
-    // Store personalized lead summary in sessionStorage for /gracias page
+    // Build lead data
     const leadName = formData.nombre?.trim() || "Titular";
     const phoneDigits = formData.celular?.replace(/\D/g, "") || "";
-    const last4 = phoneDigits.slice(-4) || "8920";
+    const last4 = phoneDigits.slice(-4) || "0000";
     const instName = getInstitutionDisplay(formData.institucion, formData.otraInstitucionNombre);
     const debtName = getDebtTypeDisplay(formData.tipoDeuda);
     const amtName = getAmountDisplay(formData.amount);
     const folioCode = `BR-${Math.floor(100000 + Math.random() * 900000)}`;
+    const deviceType =
+      typeof navigator !== "undefined" && navigator.userAgent.includes("Mobile")
+        ? "M\u00f3vil"
+        : "Escritorio";
+    const referrerVal =
+      typeof document !== "undefined" ? document.referrer || "Directo" : "Directo";
 
     const leadSummary = {
       nombre: leadName,
@@ -165,47 +174,87 @@ export function MultiStepForm() {
       tipoDeuda: debtName,
       institucion: instName,
       celular: formData.celular || "",
-      last4: last4,
+      last4,
       email: formData.email || "",
       folio: folioCode,
       submittedAt: new Date().toISOString(),
     };
 
-    // Log to persistent real backend submissions engine
-    logFormSubmission({
-      folio: folioCode,
-      nombre: leadName,
-      institucion: instName,
-      tipoDeuda: debtName,
-      monto: amtName,
-      celular: formData.celular || "",
-      email: formData.email || "",
-    });
-
+    // Persist to sessionStorage for /gracias page
     try {
       sessionStorage.setItem("bravo_lead_summary", JSON.stringify(leadSummary));
     } catch {
       // safe fallback
     }
 
-    // Simulate submission and lead conversion
-    setTimeout(() => {
-      trackEvent("prequalification_complete", { form_id: "prequal" });
+    // ── Rate limit check: 1 submit per 60s ────────────────────────────
+    const rateCheck = checkRateLimit("form_submit", 60_000, 1);
+    if (!rateCheck.allowed) {
+      setSubmitError(
+        `Por seguridad, espera ${rateCheck.secondsRemaining} segundo${rateCheck.secondsRemaining !== 1 ? "s" : ""} antes de intentar nuevamente.`
+      );
+      setIsSubmitting(false);
+      return;
+    }
+
+    // ── Real API call to Neon backend ────────────────────────────
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          folio: folioCode,
+          nombre: leadName,
+          institucion: instName,
+          tipoDeuda: debtName,
+          monto: amtName,
+          celular: formData.celular || "",
+          email: formData.email || "",
+          device: deviceType,
+          referrer: referrerVal,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(
+          data.error || `Error del servidor (HTTP ${res.status}). Int\u00e9ntalo nuevamente.`
+        );
+      }
+
+      // Success — update folio from backend if provided
+      if (data.lead?.folio) {
+        leadSummary.folio = data.lead.folio;
+        try {
+          sessionStorage.setItem("bravo_lead_summary", JSON.stringify(leadSummary));
+        } catch {}
+      }
+
+      trackEvent("prequalification_complete", { form_id: "prequal", folio: leadSummary.folio });
       trackEvent("generate_lead", {
         form_id: "prequal",
         debt_range: formData.amount,
         entity_type: formData.tipoDeuda,
       });
-      const queryParams = new URLSearchParams({
-        nombre: leadName,
-        tel4: last4,
-        inst: instName,
-        deuda: debtName,
-        monto: amtName,
-      });
-      router.push(`/gracias?${queryParams.toString()}`);
-    }, 900);
+
+      // Clear rate limit after successful submission (allow fresh submit on /gracias revisit)
+      clearRateLimit("form_submit");
+
+      // Redirect to /gracias
+      const redirectUrl = data.redirectUrl || "/gracias";
+      router.push(redirectUrl);
+    } catch (err: any) {
+      console.error("[Form] Submit error:", err);
+      setSubmitError(
+        err?.message ||
+          "Ocurri\u00f3 un error al enviar tu solicitud. Verifica tu conexi\u00f3n e int\u00e9ntalo nuevamente."
+      );
+      setIsSubmitting(false);
+      trackEvent("form_submit_error", { form_id: "prequal", error_message: err?.message || "unknown" });
+    }
   };
+
 
   // Formatter for cellphone input with smart autofill (+52 prefix strip)
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -804,6 +853,29 @@ export function MultiStepForm() {
               Aviso de Privacidad
             </Link>.
           </div>
+
+          {/* Error Message (shown on API failure) */}
+          {submitError && (
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="flex flex-col gap-2 bg-[#FFF9F8] border border-[#F0C9C6] rounded-[12px] p-4 mt-1"
+            >
+              <span className="text-[13px] font-bold text-[#8C201B]">
+                No pudimos procesar tu solicitud
+              </span>
+              <span className="text-[12.5px] text-[#3A3344] leading-relaxed">
+                {submitError}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSubmitError(null)}
+                className="self-start text-[12px] font-bold text-[#5B2C72] underline underline-offset-2 hover:text-[#45205A] mt-1"
+              >
+                Intentar nuevamente
+              </button>
+            </div>
+          )}
         </div>
       </form>
     </div>
