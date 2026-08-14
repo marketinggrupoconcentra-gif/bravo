@@ -25,7 +25,23 @@ export default function AdminDashboardPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [submissions, setSubmissions] = useState<FormSubmissionLog[]>([]);
   const [actions, setActions] = useState<UserActionLog[]>([]);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   const router = useRouter();
+
+  // ─── Auth Guard ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    try {
+      const isAuthed = sessionStorage.getItem("bravo_admin_auth") === "true";
+      if (!isAuthed) {
+        router.replace("/acceso");
+        return;
+      }
+    } catch {
+      router.replace("/acceso");
+      return;
+    }
+    setIsAuthChecked(true);
+  }, [router]);
 
   // Load real logs from database
   const refreshLogs = async () => {
@@ -41,10 +57,11 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
+    if (!isAuthChecked) return;
     refreshLogs();
     const interval = setInterval(refreshLogs, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthChecked]);
 
   const handleLogout = () => {
     try {
@@ -62,6 +79,9 @@ export default function AdminDashboardPage() {
       prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
   };
+
+  // Don't render anything until auth is confirmed — prevents flash of dashboard
+  if (!isAuthChecked) return null;
 
   return (
     <div className="min-h-screen bg-[#F5F3F7] text-[#17131F] flex font-sans">

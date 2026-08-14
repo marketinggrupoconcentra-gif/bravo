@@ -122,14 +122,14 @@ export function Faq() {
               const isOpen = openIndex === idx;
               const staggerClass = `stagger-${(idx % 5) + 1}`;
               return (
-                <div
-                  key={idx}
-                  className={`rounded-[20px] transition-all duration-300 overflow-hidden reveal-init ${staggerClass} ${
-                    isOpen
-                      ? "bg-white border-2 border-[#5B2C72] shadow-md"
-                      : "bg-white/80 backdrop-blur-sm border border-[#E7E3EC] hover:border-[#AB6CCA] hover:shadow-sm"
-                  }`}
-                >
+                <div key={idx} className={`reveal-init ${staggerClass} w-full`}>
+                  <div
+                    className={`rounded-[20px] transition-all duration-300 overflow-hidden ${
+                      isOpen
+                        ? "bg-white border-2 border-[#5B2C72] shadow-md"
+                        : "bg-white/80 backdrop-blur-sm border border-[#E7E3EC] hover:border-[#AB6CCA] hover:shadow-sm"
+                    }`}
+                  >
                   <button
                     type="button"
                     onClick={() => toggle(idx)}
@@ -177,6 +177,7 @@ export function Faq() {
                         {item.a}
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
               );
