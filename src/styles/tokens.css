@@ -1,0 +1,71 @@
+:root {
+  /* ==========================================================================
+     BRAVO MÉXICO — DESIGN TOKENS V3 (CLAUDE DESIGN SOURCE ALIGNED)
+     ========================================================================== */
+
+  /* BRAVO VIOLET */
+  --violet-50: #F5EDF9;
+  --violet-400: #AB6CCA;
+  --violet-600: #7E4499;
+  --violet-700: #5B2C72;
+  --violet-900: #2E1739;
+
+  /* BRAVO CYAN */
+  --cyan-50: #E9F8FA;
+  --cyan-300: #5ECBDB;
+  --cyan-600: #1E8A9B;
+
+  /* TEXT */
+  --ink: #17131F;
+  --text-secondary: #3A3344;
+  --text-muted: #5B5266;
+  --text-subtle: #8A8095;
+
+  /* SURFACES */
+  --page: #F1EEF3;
+  --surface: #FFFFFF;
+  --surface-soft: #FBFAFC;
+  --surface-violet: #F9F4FB;
+
+  /* BORDERS */
+  --border: #E7E3EC;
+  --border-soft: #F0EDF3;
+  --border-strong: #C9C1D4;
+
+  /* SEMANTIC */
+  --success: #157A5A;
+  --success-soft: #F1FAF6;
+  --success-border: #C6E6D9;
+  --error: #B02A24;
+  --error-dark: #8C201B;
+  --error-soft: #FFF9F8;
+  --error-border: #F0C9C6;
+
+  /* MOTION TOKENS */
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-progress: 300ms;
+  --motion-success: 400ms;
+
+  /* Compatibility Bridge */
+  --color-violet-50: #F5EDF9;
+  --color-violet-400: #AB6CCA;
+  --color-violet-600: #7E4499;
+  --color-violet-700: #5B2C72;
+  --color-violet-900: #2E1739;
+  --color-cyan-50: #E9F8FA;
+  --color-cyan-300: #5ECBDB;
+  --color-cyan-600: #1E8A9B;
+  --color-neutral-bg: #FBFAFC;
+  --color-neutral-ink: #17131F;
+  --color-neutral-border: #E7E3EC;
+  --color-neutral-border-muted: #F0EDF3;
+  --color-neutral-text: #3A3344;
+  --color-neutral-text-muted: #5B5266;
+  --color-neutral-text-faint: #8A8095;
+  --color-page: #F1EEF3;
+  --color-semantic-success: #157A5A;
+  --color-semantic-success-bg: #F1FAF6;
+  --color-semantic-error: #B02A24;
+  --color-semantic-error-bg: #FFF9F8;
+}

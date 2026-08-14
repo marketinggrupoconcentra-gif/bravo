@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="32" cy="32" r="32" fill="#F5EDF9"/>
+  <!-- Head / Bust in Bravo palette -->
+  <circle cx="32" cy="24" r="11" fill="#AB6CCA"/>
+  <path d="M14 54C14 44.0589 22.0589 36 32 36C41.9411 36 50 44.0589 50 54V56C50 58.2091 48.2091 60 46 60H18C15.7909 60 14 58.2091 14 56V54Z" fill="#5B2C72"/>
+  <!-- Subtle collar / accent in cyan -->
+  <path d="M28 36L32 41L36 36H28Z" fill="#5ECBDB"/>
+</svg>

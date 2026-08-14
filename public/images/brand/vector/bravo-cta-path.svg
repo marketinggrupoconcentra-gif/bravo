@@ -1,0 +1,31 @@
+<svg width="1200" height="400" viewBox="0 0 1200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bravoPathGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#5B2C72" stop-opacity="0.12"/>
+      <stop offset="50%" stop-color="#AB6CCA" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#5ECBDB" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="bravoNodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#AB6CCA" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#5ECBDB" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Subtle organic path trajectory -->
+  <path d="M 50 320 C 250 320, 350 180, 550 180 C 750 180, 850 80, 1150 80" 
+        stroke="url(#bravoPathGrad)" 
+        stroke-width="3" 
+        stroke-dasharray="6 6" 
+        fill="none"/>
+  
+  <path d="M 80 340 C 280 340, 400 210, 600 210 C 800 210, 920 120, 1120 120" 
+        stroke="url(#bravoPathGrad)" 
+        stroke-width="1.5" 
+        fill="none"/>
+
+  <!-- Milestone Nodes -->
+  <circle cx="200" cy="275" r="5" fill="#5B2C72" fill-opacity="0.18"/>
+  <circle cx="550" cy="180" r="6" fill="#AB6CCA" fill-opacity="0.25"/>
+  <circle cx="850" cy="108" r="7" fill="#5ECBDB" fill-opacity="0.3"/>
+  <circle cx="1100" cy="82" r="8" fill="url(#bravoNodeGrad)"/>
+</svg>

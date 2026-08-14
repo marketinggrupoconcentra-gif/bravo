@@ -1,0 +1,10 @@
+<svg width="800" height="400" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="bravoVPattern" width="80" height="80" patternUnits="userSpaceOnUse">
+      <!-- Subtle angled chevron / Bravo V geometry at ~4% opacity on dark violet -->
+      <path d="M 15 25 L 40 55 L 65 25" stroke="#AB6CCA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.05" fill="none"/>
+      <circle cx="40" cy="55" r="2" fill="#5ECBDB" fill-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bravoVPattern)" />
+</svg>
