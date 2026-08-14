@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
+
+// Helper to hash string to SHA-256 (lowercase hex) as required by Google Ads API
+function sha256(val: string): string {
+  if (!val) return "";
+  const cleaned = val.trim().toLowerCase();
+  return crypto.createHash("sha256").update(cleaned).digest("hex");
+}
 
 // PRIVATE: requires valid admin session (processes lead PII)
 export async function POST(req: NextRequest) {
@@ -18,21 +26,24 @@ export async function POST(req: NextRequest) {
       .map((lead: any) => {
         const dateObj = new Date(lead.submittedAt || Date.now());
         const formattedTime = dateObj.toISOString().replace("T", " ").substring(0, 19) + "+00:00";
-        const estimatedAmount = lead.monto?.includes("1,000,000")
-          ? 350000
-          : lead.monto?.includes("250,000")
-          ? 175000
-          : 75000;
+        
+        let estimatedAmount = 0;
+        if (lead.monto) {
+          const parsed = parseInt(lead.monto.replace(/\\D/g, ""), 10);
+          if (!isNaN(parsed)) {
+            estimatedAmount = parsed;
+          }
+        }
 
         return {
-          google_click_id: lead.attribution?.gclid || "Cj0KCQjwmOm3BhC8ARIsAblb44U" + Math.random().toString(36).substring(2, 8),
+          google_click_id: lead.attribution?.gclid || "",
           conversion_name: conversionAction || "Bravo_Lead_Calificado",
           conversion_date_time: formattedTime,
           conversion_value: estimatedAmount,
           conversion_currency_code: "MXN",
           user_identifiers: [
-            { hashed_email: lead.email ? `sha256_${lead.email}` : undefined },
-            { hashed_phone: lead.celular ? `sha256_52${lead.celular}` : undefined },
+            { hashed_email: lead.email ? sha256(lead.email) : undefined },
+            { hashed_phone: lead.celular ? sha256(`52${lead.celular.replace(/\\D/g, "")}`) : undefined },
           ].filter((u) => u.hashed_email || u.hashed_phone),
           lead_folio: lead.folio,
           lead_name: lead.nombre,

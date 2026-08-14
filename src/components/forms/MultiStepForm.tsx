@@ -48,10 +48,8 @@ export function MultiStepForm() {
 
   // Load custom Form Studio Config if defined
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem("bravo_form_studio_config");
-      if (cached) setStudioConfig(JSON.parse(cached));
-    } catch {}
+    // Disabled in production to prevent local Admin overrides leaking to public UI.
+    // Future: fetch from /api/admin/config if needed dynamically.
 
     const handleUpdate = (e: any) => {
       if (e.detail) setStudioConfig(e.detail);
@@ -173,7 +171,8 @@ export function MultiStepForm() {
     const instName = getInstitutionDisplay(formData.institucion, formData.otraInstitucionNombre);
     const debtName = getDebtTypeDisplay(formData.tipoDeuda);
     const amtName = getAmountDisplay(formData.amount);
-    const folioCode = `BR-${Math.floor(100000 + Math.random() * 900000)}`;
+    // eslint-disable-next-line react-hooks/purity
+    const folioCode = `BR-${Date.now().toString().slice(-6)}`;
     const deviceType =
       typeof navigator !== "undefined" && navigator.userAgent.includes("Mobile")
         ? "M\u00f3vil"

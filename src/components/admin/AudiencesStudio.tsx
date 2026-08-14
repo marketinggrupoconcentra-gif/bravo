@@ -94,7 +94,7 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
           testEventCode: metaTestCode || undefined,
           eventName: metaEventName,
           lead: selectedLead,
-          value: selectedLead.monto.includes("1,000,000") ? 350000 : 75000,
+          value: selectedLead.monto ? parseInt(selectedLead.monto.replace(/\\D/g, ""), 10) || 0 : 0,
           currency: "MXN",
         }),
       });
@@ -117,7 +117,7 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
         const fn = parts[0] || "";
         const ln = parts.slice(1).join(" ") || "";
         const phone = lead.celular ? `52${lead.celular.replace(/\D/g, "")}` : "";
-        const val = lead.monto.includes("1,000,000") ? "350000" : "75000";
+        const val = lead.monto ? parseInt(lead.monto.replace(/\D/g, ""), 10) || 0 : 0;
         return `"${lead.email || ""}","${phone}","${fn}","${ln}","MX","${val}"`;
       })
       .join("\n");
@@ -136,9 +136,9 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
     const headers = "Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency\n";
     const rows = filteredAudienceLeads
       .map((lead) => {
-        const gclid = lead.attribution?.gclid || `Cj0KCQjwmOm3BhC8ARIs_${Math.random().toString(36).substring(2, 10)}`;
+        const gclid = lead.attribution?.gclid || "";
         const dateStr = new Date(lead.submittedAt || Date.now()).toISOString().replace("T", " ").substring(0, 19) + "+00:00";
-        const val = lead.monto.includes("1,000,000") ? 350000 : 75000;
+        const val = lead.monto ? parseInt(lead.monto.replace(/\D/g, ""), 10) || 0 : 0;
         return `"${gclid}","${googleConversionAction}","${dateStr}","${val}","MXN"`;
       })
       .join("\n");

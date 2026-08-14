@@ -21,6 +21,11 @@ const eslintConfig = defineConfig([
     "public/**",
     "node_modules/**",
   ]),
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

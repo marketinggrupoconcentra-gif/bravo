@@ -18,6 +18,28 @@ function formatMetaPhone(phone: string): string {
   return digits;
 }
 
+// In-memory rate limiting map
+const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const limitWindowMs = 60 * 1000; // 1 minute
+  const maxRequests = 5;
+
+  const record = rateLimitMap.get(ip);
+  if (!record || record.expiresAt < now) {
+    rateLimitMap.set(ip, { count: 1, expiresAt: now + limitWindowMs });
+    return true;
+  }
+
+  if (record.count >= maxRequests) {
+    return false;
+  }
+
+  record.count += 1;
+  return true;
+}
+
 // GET: Fetch all leads from Neon Postgres with api_sync_logs
 // PRIVATE: requires valid admin session
 export async function GET(req: NextRequest) {
@@ -65,6 +87,18 @@ export async function GET(req: NextRequest) {
 // POST: Insert a new lead and execute platform dispatches
 export async function POST(req: NextRequest) {
   try {
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0] ||
+      req.headers.get("x-real-ip") ||
+      "127.0.0.1";
+
+    if (!checkRateLimit(clientIp)) {
+      return NextResponse.json(
+        { success: false, error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     // ── Payload size guard (max 32KB) ─────────────────────────────────────
     const contentLength = Number(req.headers.get("content-length") || "0");
     if (contentLength > 32_768) {

@@ -25,7 +25,7 @@ export default function HomePageClient({ claims }: HomePageClientProps) {
       {/* 01 · Hero with Prequalification Form */}
       <Hero
         title="Revisemos tu situación y conoce tus opciones reales"
-        subtitle="Responde unas preguntas breves. Un asesor revisa tu caso y te explica qué alternativas pueden aplicar antes de que tomes una decisión."
+        subtitle="Programa de liquidación sin créditos nuevos ni avales."
         ctaText="Revisar mi caso"
         ctaHref="#precalificar"
         resolvedClaims={claims}

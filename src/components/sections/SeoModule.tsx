@@ -87,7 +87,7 @@ export function SeoModule() {
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#157A5A] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
-              TU DINERO EN CUENTA PROPIA
+              CONTROL DE TUS APORTACIONES
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export function SeoModule() {
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#C53030] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
-              SEGURIDAD Y PROTECCIÓN LEGAL
+              PREVENCIÓN Y CERTEZA
             </div>
           </div>
         </div>

@@ -77,7 +77,7 @@ export function CustomSelect({
       <select
         required={required}
         value={value}
-        onChange={() => {}}
+        onChange={(e) => handleSelect(e.target.value)}
         aria-hidden="true"
         tabIndex={-1}
         className="sr-only"

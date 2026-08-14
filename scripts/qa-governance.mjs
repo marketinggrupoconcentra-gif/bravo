@@ -11,7 +11,7 @@
  * 5. Lead validation
  */
 
-const BASE = "http://localhost:3000";
+const BASE = "http://127.0.0.1:3000";
 let passed = 0;
 let failed = 0;
 
@@ -61,6 +61,16 @@ async function testAdminAuth() {
     ok("POST /api/admin/claims without auth → 401");
   } else {
     fail("POST /api/admin/claims without auth should be 401", `got ${res.status}`);
+  }
+
+  // Fake cookie regression test
+  const fakeCookieRes = await fetch(`${BASE}/api/admin/claims`, {
+    headers: { Cookie: "bravo_admin_session=some-fake-string" }
+  });
+  if (fakeCookieRes.status === 401) {
+    ok("GET /api/admin/claims with fake cookie → 401");
+  } else {
+    fail("GET /api/admin/claims with fake cookie should be 401", `got ${fakeCookieRes.status}`);
   }
 }
 
@@ -191,8 +201,23 @@ await testSecurity();
 console.log("\n── 5. Claims Admin API Validation ─────────────────────────────");
 
 async function testClaimsValidation() {
-  const adminSecret = process.env.ADMIN_SECRET_KEY || "bravo-admin-local-dev";
-  const adminCookie = `bravo_admin_token=${adminSecret}`;
+  const email = process.env.ADMIN_EMAIL || "admin@bravo.mx";
+  const password = process.env.ADMIN_PASSWORD || "Bravo2026!";
+  
+  const loginRes = await post("/api/auth/login", { email, password });
+  let adminCookie = "";
+  if (loginRes.ok) {
+    const setCookie = loginRes.headers.get("set-cookie");
+    if (setCookie) {
+      adminCookie = setCookie.split(";")[0];
+    } else {
+      fail("Login OK but no set-cookie header found");
+      return;
+    }
+  } else {
+    fail("Login failed", await loginRes.text());
+    return;
+  }
 
   // Try invalid status
   const r1 = await fetch(`${BASE}/api/admin/claims`, {

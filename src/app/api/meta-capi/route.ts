@@ -55,6 +55,12 @@ export async function POST(req: NextRequest) {
 
     const unixTime = Math.floor(Date.now() / 1000);
 
+    let parsedValue = 0;
+    if (lead?.monto) {
+      const parsed = parseInt(lead.monto.replace(/\\D/g, ""), 10);
+      if (!isNaN(parsed)) parsedValue = parsed;
+    }
+
     // Build standard Meta CAPI event payload
     const eventPayload: Record<string, unknown> = {
       event_name: eventName,
@@ -75,10 +81,9 @@ export async function POST(req: NextRequest) {
       },
       custom_data: {
         currency: currency,
-        value: Number(value) || 75000,
+        value: Number(value) || parsedValue,
         content_name: `Programa Liquidación Bravo - ${lead?.institucion || "Deuda Bancaria"}`,
         content_category: "Servicios Financieros",
-        predicted_debt: lead?.monto || "$100,000 – $250,000",
         lead_status: lead?.status || "Nuevo",
       },
     };
@@ -118,19 +123,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Otherwise, simulate successful validation and payload generation for sandbox/test mode
-    return NextResponse.json({
-      success: true,
-      status: 200,
-      meta_response: {
-        events_received: 1,
-        fbtrace_id: `trace_${Math.random().toString(36).substring(2, 12)}`,
-        messages: ["Evento validado y formateado con éxito bajo estándares Meta CAPI v19.0."],
+    // Otherwise, return NOT_CONFIGURED
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: "NOT_CONFIGURED",
+        is_live_call: false,
+        note: "Meta Access Token no configurado."
       },
-      dispatched_payload: requestBody,
-      is_live_call: false,
-      note: "Modo Prueba de Formato CAPI (Para enviar a servidores reales de Meta, ingresa tu Access Token).",
-    });
+      { status: 400 }
+    );
   } catch (error: any) {
     console.error("[Meta CAPI API Error]", error);
     return NextResponse.json(

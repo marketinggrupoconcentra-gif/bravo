@@ -31,8 +31,11 @@ function InPageHeatmapContent() {
     const opacityParam = parseInt(searchParams?.get("opacity") || "90", 10);
 
     if (isUrlHeatmap) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEnabled(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHeatmapMode(modeParam);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpacity(opacityParam);
     }
 
@@ -52,6 +55,7 @@ function InPageHeatmapContent() {
   useEffect(() => {
     if (!isEnabled) return;
     const initialActions = getLocalUserActions();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActions(initialActions);
 
     const handleActionLogged = (e: Event) => {

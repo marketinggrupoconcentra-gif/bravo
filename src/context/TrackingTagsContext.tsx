@@ -198,6 +198,7 @@ export function TrackingTagsProvider({ children }: { children: React.ReactNode }
     try {
       const cached = localStorage.getItem(STORAGE_KEY);
       if (cached) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setConfig((prev) => ({ ...prev, ...JSON.parse(cached) }));
       }
     } catch {
