@@ -1,13 +1,14 @@
 import { neon } from "@neondatabase/serverless";
 
-const connectionString = process.env.DATABASE_URL || "";
+let connectionString = process.env.DATABASE_URL;
 
-// Delay error so Next.js build doesn't crash during static analysis
-export const sql = connectionString 
-  ? neon(connectionString) 
-  : ((...args: any[]) => {
-      throw new Error("DATABASE_URL must be set in environment variables.");
-    }) as ReturnType<typeof neon>;
+if (!connectionString) {
+  // Provide dummy URL during build to prevent crash, but warn in console
+  console.warn("⚠️ DATABASE_URL is not set. Using dummy connection string. Database queries will fail.");
+  connectionString = "postgres://dummy:dummy@dummy/dummy";
+}
+
+export const sql = neon(connectionString);
 
 let schemaInitialized = false;
 
