@@ -8,48 +8,63 @@ export function ScrollObserver() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // 1. Scroll Progress Bar Tracking
+    // 1. Scroll Progress Bar
     const handleScroll = () => {
       const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
       if (totalScroll > 0) {
-        const currentProgress = (window.scrollY / totalScroll) * 100;
-        setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
+        const current = (window.scrollY / totalScroll) * 100;
+        setScrollProgress(Math.min(100, Math.max(0, current)));
       }
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     // 2. Intersection Observer for Scroll Reveals
-    const observerCallback: IntersectionObserverCallback = (entries, observer) => {
+    const observerCallback: IntersectionObserverCallback = (entries, obs) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("reveal-visible");
-          observer.unobserve(entry.target);
+          obs.unobserve(entry.target);
         }
       });
     };
 
+    // ── FIX 3: rootMargin adapts to viewport height ──
+    const isMobile = window.innerHeight < 700;
     const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.08,
-      rootMargin: "0px 0px -50px 0px",
+      threshold: 0.06,
+      rootMargin: isMobile ? "0px 0px -20px 0px" : "0px 0px -50px 0px",
     });
 
+    // ── FIX 1: unified selector — all classes trigger .reveal-visible ──
+    const SELECTOR = [
+      ".reveal-init:not(.reveal-visible)",
+      ".reveal-fade-left:not(.reveal-visible)",   // was wrongly :not(.reveal-fade-visible)
+      ".reveal-fade-right:not(.reveal-visible)",
+      ".reveal-scale:not(.reveal-visible)",
+    ].join(", ");
+
     const observeAll = () => {
-      const revealElements = document.querySelectorAll(
-        ".reveal-init:not(.reveal-visible), .reveal-fade-left:not(.reveal-fade-visible), .reveal-fade-right:not(.reveal-visible), .reveal-scale:not(.reveal-visible)"
-      );
-      revealElements.forEach((el) => observer.observe(el));
+      document.querySelectorAll(SELECTOR).forEach((el) => observer.observe(el));
     };
 
-    // Initial check after paint
-    const timer = setTimeout(observeAll, 60);
+    // Initial scan after paint
+    const timer = setTimeout(observeAll, 80);
 
-    // Cleanup
+    // ── FIX 2: MutationObserver picks up dynamically rendered elements ──
+    const mutObs = new MutationObserver(() => {
+      // Only re-scan nodes not yet visible
+      document.querySelectorAll(SELECTOR).forEach((el) => {
+        try { observer.observe(el); } catch { /* already observed */ }
+      });
+    });
+    mutObs.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", handleScroll);
       observer.disconnect();
+      mutObs.disconnect();
     };
   }, [pathname]);
 

@@ -248,12 +248,18 @@
   filter: blur(0px) !important;
 }
 
-/* Stagger delays with generous rhythm */
-.stagger-1 { transition-delay: 100ms; }
-.stagger-2 { transition-delay: 200ms; }
-.stagger-3 { transition-delay: 300ms; }
-.stagger-4 { transition-delay: 400ms; }
-.stagger-5 { transition-delay: 500ms; }
+/* Stagger delays — only apply BEFORE reveal, so hover/focus stays snappy */
+.stagger-1:not(.reveal-visible) { transition-delay: 100ms; }
+.stagger-2:not(.reveal-visible) { transition-delay: 210ms; }
+.stagger-3:not(.reveal-visible) { transition-delay: 320ms; }
+.stagger-4:not(.reveal-visible) { transition-delay: 430ms; }
+.stagger-5:not(.reveal-visible) { transition-delay: 540ms; }
+/* Once visible, no delay so hover interactions respond immediately */
+.stagger-1.reveal-visible,
+.stagger-2.reveal-visible,
+.stagger-3.reveal-visible,
+.stagger-4.reveal-visible,
+.stagger-5.reveal-visible { transition-delay: 0ms; }
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
