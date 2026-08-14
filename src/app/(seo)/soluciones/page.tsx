@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Hero } from "@/components/sections/Hero";
 import { FinalCta } from "@/components/sections/FinalCta";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import {
   CreditCardIcon,
   PersonalLoanIcon,
@@ -121,7 +122,7 @@ export default function SolucionesPage() {
 
       {/* ── TIPOS DE DEUDA — full-width alternating strip ── */}
       <section className="bg-[#F1EEF3] py-[72px] lg:py-[104px]">
-        <div className="bravo-container flex flex-col gap-[56px]">
+        <div className="w-full px-4 sm:px-6 lg:px-8 mx-auto flex flex-col gap-[56px]">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="flex flex-col gap-3 max-w-[620px]">
@@ -150,9 +151,9 @@ export default function SolucionesPage() {
             {debtTypes.map((dt) => {
               const Icon = dt.icon;
               return (
+                <ScrollReveal key={dt.label}>
                 <div
-                  key={dt.label}
-                  className="group relative bg-white border border-[#E7E3EC] rounded-[22px] p-6 flex flex-col gap-4 shadow-xs hover:shadow-lg hover:border-[#C5A8D8] hover:-translate-y-1 transition-all duration-300 reveal-init"
+                  className="group relative h-full bg-white border border-[#E7E3EC] rounded-[22px] p-6 flex flex-col gap-4 shadow-xs hover:shadow-lg hover:border-[#C5A8D8] hover:-translate-y-1 transition-all duration-300"
                 >
                   {dt.tag && (
                     <span className="absolute top-4 right-4 text-[10.5px] font-extrabold tracking-wide uppercase text-[#5B2C72] bg-[#F5EDF9] border border-[#DDCBE6] px-2.5 py-0.5 rounded-full">
@@ -172,6 +173,7 @@ export default function SolucionesPage() {
                     <p className="m-0 text-[14px] text-[#5B5266] leading-relaxed">{dt.desc}</p>
                   </div>
                 </div>
+                </ScrollReveal>
               );
             })}
           </div>
@@ -201,24 +203,24 @@ export default function SolucionesPage() {
 
       {/* ── PROCESO — full-width dark section ── */}
       <section className="w-full bg-[#17131F] py-[80px] lg:py-[112px]">
-        <div className="bravo-container flex flex-col gap-[56px]">
-          <div className="text-center flex flex-col gap-3 max-w-[680px] mx-auto reveal-init">
+        <div className="w-full px-4 sm:px-6 lg:px-8 mx-auto flex flex-col gap-[56px]">
+          <ScrollReveal className="text-center flex flex-col gap-3 max-w-[680px] mx-auto">
             <h2 className="m-0 text-[30px] sm:text-[38px] lg:text-[44px] font-extrabold tracking-[-0.03em] text-white leading-[1.1]">
               Cómo funciona el proceso
             </h2>
             <p className="m-0 text-[16px] text-[#B8A3C9] leading-relaxed">
               Un camino claro y documentado desde el análisis hasta la carta liberatoria.
             </p>
-          </div>
+          </ScrollReveal>
 
           {/* 4-col steps grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {process.map((p, i) => {
               const Icon = p.icon;
               return (
+                <ScrollReveal key={p.step}>
                 <div
-                  key={p.step}
-                  className={`relative bg-white/5 border border-white/10 rounded-[22px] p-7 flex flex-col gap-5 hover:bg-white/8 hover:border-[#5B2C72]/60 transition-all duration-300 reveal-init stagger-${i + 1}`}
+                  className={`relative h-full bg-white/5 border border-white/10 rounded-[22px] p-7 flex flex-col gap-5 hover:bg-white/8 hover:border-[#5B2C72]/60 transition-all duration-300 stagger-${i + 1}`}
                 >
                   {/* Step number */}
                   <div className="flex items-center justify-between">
@@ -239,6 +241,7 @@ export default function SolucionesPage() {
                     <p className="m-0 text-[14px] text-[#B8A3C9] leading-relaxed">{p.desc}</p>
                   </div>
                 </div>
+                </ScrollReveal>
               );
             })}
           </div>

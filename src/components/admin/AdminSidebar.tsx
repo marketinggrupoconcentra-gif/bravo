@@ -9,12 +9,14 @@ export type AdminTab =
   | "summary"
   | "records"
   | "cms_editor"
-  | "forms"
+  | "form"
+  | "claims"
   | "whatsapp"
   | "tracking_tags"
   | "audiences"
   | "heatmaps"
-  | "telemetry";
+  | "telemetry"
+  | "landings";
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -88,12 +90,33 @@ export function AdminSidebar({
       ),
     },
     {
-      id: "forms",
+      id: "landings",
+      label: "Gestor de Paid Landings",
+      description: "URLs noindex y ofertas",
+      icon: ({ className }) => (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      ),
+    },
+    {
+      id: "form",
       label: "Constructor de Formulario",
-      description: "Pasos, Webhooks y presets",
+      description: "Pasos, Integraciones y presets",
       icon: ({ className }) => (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      ),
+    },
+    {
+      id: "claims",
+      label: "Gobernanza de Claims",
+      description: "Textos regulatorios",
+      badge: "Compliance",
+      icon: ({ className }) => (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
         </svg>
       ),
     },

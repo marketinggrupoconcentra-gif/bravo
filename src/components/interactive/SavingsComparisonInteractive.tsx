@@ -178,9 +178,14 @@ export function SavingsComparisonInteractive() {
               >
                 Solicitar mi propuesta personalizada sin costo →
               </Link>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#DDCBE6]">
-                <CheckIcon size={13} className="text-[#5ECBDB]" />
-                <span>Evaluación confidencial · No afecta tu buró</span>
+              <div className="flex flex-col items-center justify-center gap-1.5 text-[11px] text-[#DDCBE6] text-center mt-2">
+                <div className="flex items-center gap-1.5">
+                  <CheckIcon size={13} className="text-[#5ECBDB]" />
+                  <span>Evaluación confidencial y sin impacto inmediato en historial crediticio</span>
+                </div>
+                <span className="text-[10px] opacity-70 mt-1 max-w-[90%]">
+                  *Las cifras mostradas son un ejemplo estimativo. El descuento real y los plazos dependen de las negociaciones individuales con cada acreedor.
+                </span>
               </div>
             </div>
           </div>

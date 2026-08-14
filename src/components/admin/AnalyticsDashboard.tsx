@@ -24,7 +24,14 @@ export function AnalyticsDashboard({
   // 100% REAL TELEMETRY & SUBMISSION CALCULATIONS
   // =========================================================================
   const totalEvents = actions.length;
-  const totalLeads = submissions.length;
+  
+  const validSubmissions = useMemo(() => {
+    return submissions.filter(
+      (s) => s.monto !== "menos_50k" && s.monto !== "Menos de $50,000" && s.monto !== "menos_35k" && s.monto !== "Menos de $35,000"
+    );
+  }, [submissions]);
+
+  const totalLeads = validSubmissions.length;
 
   const pageViews = useMemo(() => {
     const pvCount = actions.filter(

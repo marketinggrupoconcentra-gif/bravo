@@ -300,12 +300,28 @@ export function LandingEditor() {
     syncDraftToPreview(updated);
   };
 
+  // Validation rules
+  const REGULATED_TERMS = ["garantizado", "100%", "buró", "buro", "%", "quita", "clientes", "deudas liquidadas", "rating", "protegido"];
+
   // Save changes permanently
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check regulated terms
+    const textFields = [formData.title, formData.subtitle, formData.description, formData.badge, formData.primaryCtaText, formData.secondaryCtaText].filter(Boolean).join(" ").toLowerCase();
+    
+    const foundTerms = REGULATED_TERMS.filter(term => textFields.includes(term.toLowerCase()));
+    
+    if (foundTerms.length > 0) {
+      alert(`⚠️ CUMPLIMIENTO REGULATORIO\nNo puedes publicar esto. El contenido contiene palabras reguladas: "${foundTerms.join(', ')}".\n\nPor favor, ingresa un claim aprobado desde Gobernanza de Claims o modifica el texto.`);
+      return;
+    }
+
     setIsSaving(true);
     setSaveSuccess(false);
 
+    // In a full implementation we would set status to "DRAFT", "PREVIEW" or "PUBLISHED".
+    // For now, if it passes compliance, we update it.
     const success = await updateSection(selectedSectionKey, formData);
     setIsSaving(false);
     if (success) {

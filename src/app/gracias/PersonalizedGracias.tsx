@@ -113,7 +113,7 @@ function PersonalizedGraciasContent() {
       <div className="w-full bg-[#FAF8FB] border border-[#E7E3EC] rounded-[22px] p-5 sm:p-6 flex flex-col gap-4 shadow-xs relative z-10">
         <div className="text-[12px] font-mono font-extrabold tracking-wider uppercase text-[#5B2C72] border-b border-[#EAE5EF] pb-2.5 flex items-center justify-between">
           <span>Resumen de tu diagnóstico personalizado:</span>
-          <span className="text-[#157A5A] font-bold">100% SIN COSTO</span>
+          <span className="text-[#157A5A] font-bold">SIN COSTO INICIAL</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-[14px]">

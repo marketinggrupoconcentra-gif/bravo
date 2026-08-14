@@ -7,12 +7,14 @@ export function WhatsAppSettingsStudio() {
   const { config, updateConfig, getWhatsAppUrl } = useContactChannels();
   const [formData, setFormData] = useState<ContactChannelsConfig>(config);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (field: keyof ContactChannelsConfig, value: any) => {
     setFormData((prev: ContactChannelsConfig) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     // Format full number
     const cleanDigits = formData.whatsappNumber.replace(/[^0-9]/g, "");
     const formatted = `${formData.whatsappCountryCode} ${cleanDigits.slice(0, 2)} ${cleanDigits.slice(2, 6)} ${cleanDigits.slice(6)}`;
@@ -23,15 +25,18 @@ export function WhatsAppSettingsStudio() {
       whatsappFormatted: formatted,
     };
 
-    updateConfig(updated);
+    await updateConfig(updated);
     setFormData(updated);
+    setIsSaving(false);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3500);
   };
 
-  const handleResetDefaults = () => {
+  const handleResetDefaults = async () => {
+    setIsSaving(true);
     setFormData(DEFAULT_CONTACT_CONFIG);
-    updateConfig(DEFAULT_CONTACT_CONFIG);
+    await updateConfig(DEFAULT_CONTACT_CONFIG);
+    setIsSaving(false);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3500);
   };

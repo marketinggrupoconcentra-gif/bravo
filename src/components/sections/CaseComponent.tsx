@@ -256,7 +256,7 @@ export function CaseComponent() {
                   </svg>
                 </div>
                 <span>
-                  El plazo y la aportación mensual se adaptan 100% a tus posibilidades reales de pago durante la asesoría.
+                  El plazo y la aportación mensual se adaptan a tus posibilidades reales de pago durante la asesoría.
                 </span>
               </div>
             </div>
@@ -397,7 +397,7 @@ export function CaseComponent() {
                   Solicitar plan con este monto
                 </Link>
                 <span className="text-[12px] text-[#C7B8D2] text-center sm:text-right">
-                  Evaluación 100% gratuita
+                  Evaluación inicial gratuita
                 </span>
               </div>
             </div>

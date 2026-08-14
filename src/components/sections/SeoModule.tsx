@@ -90,7 +90,7 @@ export function SeoModule() {
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#157A5A] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
-              FONDO 100% PROTEGIDO
+              FONDO PROTEGIDO
             </div>
           </div>
 
@@ -234,7 +234,7 @@ export function SeoModule() {
                 ¿Quieres saber qué descuento y plazo aplican a tu caso?
               </span>
               <span className="text-[14px] text-[#DDCBE6]">
-                Evaluación 100% gratuita y confidencial, sin consulta previa al buró de crédito.
+                Evaluación inicial gratuita y confidencial, sin impacto en historial crediticio.
               </span>
             </div>
             <Link

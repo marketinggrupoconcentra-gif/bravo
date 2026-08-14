@@ -14,11 +14,13 @@ import { ExecutiveSummary } from "@/components/admin/ExecutiveSummary";
 import { RecordsManager } from "@/components/admin/RecordsManager";
 import { LandingEditor } from "@/components/admin/LandingEditor";
 import { FormStudio } from "@/components/admin/FormStudio";
+import { LandingsStudio } from "@/components/admin/LandingsStudio";
 import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
 import { HeatmapStudio } from "@/components/admin/HeatmapStudio";
 import { WhatsAppSettingsStudio } from "@/components/admin/WhatsAppSettingsStudio";
 import { TrackingTagsStudio } from "@/components/admin/TrackingTagsStudio";
 import { AudiencesStudio } from "@/components/admin/AudiencesStudio";
+import { ClaimsStudio } from "@/components/admin/ClaimsStudio";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("summary");
@@ -125,9 +127,9 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="text-right hidden sm:block">
-                <span className="block text-[13px] font-bold text-[#17131F]">admin@bravo.mx</span>
-                <span className="block text-[11px] text-[#8A8095]">Super Administrador</span>
+              <div className="flex flex-col text-left">
+                <span className="block text-[13px] font-bold text-[#17131F]">Administrador del Sistema</span>
+                <span className="block text-[11px] text-[#5B5266]">Bravo Operaciones</span>
               </div>
 
               <button
@@ -165,9 +167,9 @@ export default function AdminDashboardPage() {
           {activeTab === "cms_editor" && <LandingEditor />}
 
           {/* TAB 3: Form Studio & Webhook Integrations */}
-          {activeTab === "forms" && <FormStudio />}
-
-          {/* TAB 4: WhatsApp & Contact Channels Studio */}
+          {activeTab === "form" && <FormStudio />}
+          {activeTab === "landings" && <LandingsStudio />}
+          {activeTab === "claims" && <ClaimsStudio />}
           {activeTab === "whatsapp" && <WhatsAppSettingsStudio />}
 
           {/* TAB 5: Tracking Tags & Pixels Studio */}

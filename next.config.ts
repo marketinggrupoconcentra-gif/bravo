@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+          { key: 'Server', value: 'Bravo Secure Data Engine' },
+          { key: 'X-Powered-By', value: 'BravoSecurity' }
         ],
       },
     ];

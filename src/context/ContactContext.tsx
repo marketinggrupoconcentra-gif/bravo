@@ -30,7 +30,7 @@ export const DEFAULT_CONTACT_CONFIG: ContactChannelsConfig = {
   floatingWidgetEnabled: true,
   floatingWidgetPosition: "bottom-right",
   floatingWidgetText: "¿Dudas con tus deudas? Escríbenos",
-  supportPhone: "800 000 0000",
+  supportPhone: "",
   supportEmail: "atencion@bravo.mx",
   businessHours: "Lunes a Viernes 9:00 a 19:00, Sábados 9:00 a 14:00 (Hora CDMX)",
   youtubeUrl: "https://youtube.com/@bravomexico",
@@ -55,26 +55,50 @@ export function ContactChannelsProvider({ children }: { children: React.ReactNod
   const [config, setConfig] = useState<ContactChannelsConfig>(DEFAULT_CONTACT_CONFIG);
 
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (cached) {
-        setConfig((prev) => ({ ...prev, ...JSON.parse(cached) }));
+    async function fetchConfig() {
+      try {
+        // Try local storage cache first for instant load
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (cached) {
+          setConfig((prev) => ({ ...prev, ...JSON.parse(cached) }));
+        }
+
+        const res = await fetch("/api/config?key=contact_channels");
+        if (res.ok) {
+          const { success, data } = await res.json();
+          if (success && data) {
+            setConfig((prev) => {
+              const updated = { ...prev, ...data };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+              return updated;
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("[ContactContext] using default/cached config:", err);
       }
-    } catch {
-      // ignore
     }
+    
+    fetchConfig();
   }, []);
 
-  const updateConfig = (updates: Partial<ContactChannelsConfig>) => {
-    setConfig((prev) => {
-      const updated = { ...prev, ...updates };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
-      return updated;
-    });
+  const updateConfig = async (updates: Partial<ContactChannelsConfig>) => {
+    // 1. Optimistic update
+    const updated = { ...config, ...updates };
+    setConfig(updated);
+    
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      
+      // 2. Persist to Postgres via Admin API
+      await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "contact_channels", value: updated }),
+      });
+    } catch (err) {
+      console.warn("Failed to save contact channels to DB", err);
+    }
   };
 
   const getWhatsAppUrl = (customText?: string) => {

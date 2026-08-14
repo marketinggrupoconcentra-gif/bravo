@@ -11,6 +11,7 @@ export type EventName =
   | "form_step_complete"
   | "form_validation_error"
   | "prequalification_complete"
+  | "prequalification_disqualified"
   | "form_submit_attempt"
   | "generate_lead"
   | "form_submit_error"
@@ -81,6 +82,7 @@ export type EventParamsMap = {
   form_step_complete: FormEventParams;
   form_validation_error: FormEventParams & { error_message: string };
   prequalification_complete: FormEventParams;
+  prequalification_disqualified: FormEventParams;
   form_submit_attempt: FormEventParams;
   generate_lead: FormEventParams;
   form_submit_error: FormEventParams & { error_message: string };

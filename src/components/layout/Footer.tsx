@@ -61,56 +61,7 @@ export function Footer() {
               </a>
             </div>
 
-            {/* App Store & Google Play Vector Badges */}
-            <div className="flex flex-col gap-2.5 pt-1">
-              <span className="text-[12px] font-mono font-bold uppercase tracking-wider text-[#5ECBDB]">
-                Gestiona tu ahorro desde tu app:
-              </span>
-              <div className="flex flex-wrap gap-2.5">
-                {/* Apple App Store Badge (Vector SVG) */}
-                <a
-                  href="https://apps.apple.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-black/60 hover:bg-black border border-white/20 hover:border-white/40 rounded-[12px] px-3 py-2 flex items-center gap-2.5 transition-all shadow-xs group"
-                >
-                  <svg className="w-6 h-6 fill-white shrink-0" viewBox="0 0 24 24">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.65 1.35-.58.67-.99 1.74-.86 2.76 1.01.08 2.05-.51 2.59-1.26z" />
-                  </svg>
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] uppercase tracking-wider text-[#C7B8D2] leading-none">
-                      Descárgala en el
-                    </span>
-                    <span className="text-[13px] font-bold text-white leading-tight">
-                      App Store
-                    </span>
-                  </div>
-                </a>
 
-                {/* Google Play Store Badge (Vector SVG) */}
-                <a
-                  href="https://play.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-black/60 hover:bg-black border border-white/20 hover:border-white/40 rounded-[12px] px-3 py-2 flex items-center gap-2.5 transition-all shadow-xs group"
-                >
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M3.6 1.9L13.8 12 3.6 22.1c-.4-.4-.6-.9-.6-1.6V3.5c0-.7.2-1.2.6-1.6z" />
-                    <path fill="#FBBC04" d="M17.1 8.7L13.8 12l3.3 3.3 3.8-2.2c.7-.4.7-1.8 0-2.2l-3.8-2.2z" />
-                    <path fill="#EA4335" d="M13.8 12L3.6 1.9l13.5 7.8 3.8 2.2L13.8 12z" />
-                    <path fill="#34A853" d="M13.8 12l7.1 4.1-3.8 2.2L3.6 22.1 13.8 12z" />
-                  </svg>
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] uppercase tracking-wider text-[#C7B8D2] leading-none">
-                      Disponible en
-                    </span>
-                    <span className="text-[13px] font-bold text-white leading-tight">
-                      Google Play
-                    </span>
-                  </div>
-                </a>
-              </div>
-            </div>
           </div>
 
           {/* Column 2: Soluciones & Programas (3 cols) */}

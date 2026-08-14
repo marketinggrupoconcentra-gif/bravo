@@ -56,7 +56,7 @@ export default function RootLayout({
             <CmsProvider>
               <ScrollObserver />
               <AnalyticsTracker />
-              <LiveInPageHeatmapOverlay />
+              {process.env.NODE_ENV === "development" && <LiveInPageHeatmapOverlay />}
               <FloatingWhatsAppWidget />
               {children}
             </CmsProvider>

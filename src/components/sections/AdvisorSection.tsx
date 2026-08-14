@@ -156,7 +156,7 @@ export function AdvisorSection() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[14.5px] font-extrabold text-[#17131F] leading-tight">
-                    Acompañamiento 100% humano
+                    Acompañamiento humano
                   </span>
                   <span className="text-[12.5px] text-[#5B5266]">
                     Sin algoritmos impersonales que decidan por ti.

@@ -42,6 +42,7 @@ export function MultiStepForm() {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isDisqualified, setIsDisqualified] = useState(false);
   const router = useRouter();
 
   // Load custom Form Studio Config if defined
@@ -137,6 +138,16 @@ export function MultiStepForm() {
 
   const handleNext = () => {
     if (!isStepValid) return;
+
+    if (step === 0 && formData.amount === "menos_50k") {
+      trackEvent("prequalification_disqualified", {
+        form_id: "main_funnel",
+        reason: "debt_under_50k",
+      });
+      setIsDisqualified(true);
+      return;
+    }
+
     trackEvent("form_step_complete", { step_number: step + 1, form_id: "prequal" });
     setStep((s) => s + 1);
     trackEvent("form_step_view", { step_number: step + 2, form_id: "prequal" });
@@ -213,6 +224,7 @@ export function MultiStepForm() {
           email: formData.email || "",
           device: deviceType,
           referrer: referrerVal,
+          attribution: typeof window !== "undefined" && (window as any).bravoAttribution ? (window as any).bravoAttribution : {},
         }),
       });
 
@@ -361,6 +373,36 @@ export function MultiStepForm() {
         </div>
       </div>
 
+      {isDisqualified ? (
+        <div className="flex flex-col gap-6 text-center py-6">
+          <div className="w-16 h-16 bg-[#E9F8FA] rounded-full flex items-center justify-center mx-auto mb-2">
+            <svg className="w-8 h-8 text-[#1E8A9B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-[24px] sm:text-[28px] font-extrabold text-[#17131F] leading-tight m-0">
+            Orientación para montos menores a $50,000 MXN
+          </h2>
+          <p className="text-[15px] sm:text-[16px] text-[#3A3344] leading-relaxed m-0 px-4">
+            Por el monto que nos compartes, este programa de liquidación con descuento podría no ser la alternativa más adecuada en este momento. Sin embargo, ponemos a tu disposición guías gratuitas para negociar directamente con tu banco o reestructurar tus pagos.
+          </p>
+          <div className="flex flex-col gap-3 mt-4 w-full sm:w-2/3 mx-auto">
+            <Link
+              href="/recursos"
+              className="w-full bg-[#5B2C72] text-white font-bold py-3.5 px-6 rounded-full hover:bg-[#48205C] transition-colors"
+            >
+              Ver recursos gratuitos
+            </Link>
+            <button
+              type="button"
+              onClick={() => { setIsDisqualified(false); setStep(0); updateData("amount", ""); }}
+              className="text-[#5B2C72] font-semibold text-[15px] underline hover:text-[#48205C]"
+            >
+              Modificar mi respuesta
+            </button>
+          </div>
+        </div>
+      ) : (
       <form
         onSubmit={
           step === 3
@@ -779,7 +821,7 @@ export function MultiStepForm() {
               </div>
               <label htmlFor="privacy-check" className="text-[13px] leading-relaxed text-[#3A3344] cursor-pointer">
                 Acepto el{" "}
-                <Link href="#" className="underline underline-offset-2 hover:text-[#5B2C72]">
+                <Link href="/aviso-de-privacidad" className="underline underline-offset-2 hover:text-[#5B2C72]">
                   aviso de privacidad
                 </Link>{" "}
                 y que un asesor me contacte para revisar mi caso.
@@ -822,7 +864,7 @@ export function MultiStepForm() {
           {/* Clean Public Microcopy */}
           <div className="text-center text-[12px] text-[#5B5266] pt-1">
             Usaremos esta información para revisar tu caso y dar seguimiento a tu solicitud conforme a nuestro{" "}
-            <Link href="#" className="underline hover:text-[#17131F]">
+            <Link href="/aviso-de-privacidad" className="underline hover:text-[#17131F]">
               Aviso de Privacidad
             </Link>.
           </div>
@@ -852,6 +894,7 @@ export function MultiStepForm() {
         </div>
         </fieldset>
       </form>
+      )}
     </div>
   );
 }

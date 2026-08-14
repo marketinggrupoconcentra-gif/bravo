@@ -28,7 +28,7 @@ const faqItems: FaqItem[] = [
   },
   {
     q: "¿Tienen algún costo las asesorías iniciales?",
-    a: "No. El análisis preliminar y la propuesta de plan personalizado son 100% informativos y sin compromiso. Conocerás todas las condiciones antes de tomar cualquier decisión.",
+    a: "No. El análisis preliminar y la propuesta de plan personalizado son de carácter informativo y sin compromiso. Conocerás todas las condiciones antes de tomar cualquier decisión.",
   },
 ];
 

@@ -73,11 +73,65 @@ export async function initDbSchema() {
         background_style VARCHAR(64) DEFAULT 'default',
         theme_mode VARCHAR(32) DEFAULT 'light',
         custom_config JSONB,
+        status VARCHAR(32) DEFAULT 'PUBLISHED',
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
 
-    // 4. Create index for fast retrieval
+    try {
+      await sql`ALTER TABLE cms_content ADD COLUMN IF NOT EXISTS status VARCHAR(32) DEFAULT 'PUBLISHED';`;
+    } catch {}
+
+    // 4. Create admin configuration and compliance tables
+    await sql`
+      CREATE TABLE IF NOT EXISTS claims_registry (
+        id VARCHAR(128) PRIMARY KEY,
+        label VARCHAR(256) NOT NULL,
+        value TEXT NOT NULL,
+        status VARCHAR(64) DEFAULT 'PENDING_VALIDATION',
+        source VARCHAR(256),
+        source_date DATE,
+        legal_approved BOOLEAN DEFAULT FALSE,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS admin_config (
+        key VARCHAR(128) PRIMARY KEY,
+        value JSONB NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id SERIAL PRIMARY KEY,
+        action VARCHAR(128) NOT NULL,
+        context_area VARCHAR(128) NOT NULL,
+        previous_value JSONB,
+        new_value JSONB,
+        user_identity VARCHAR(128) DEFAULT 'System',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS landing_pages (
+        slug VARCHAR(128) PRIMARY KEY,
+        status VARCHAR(64) DEFAULT 'DRAFT',
+        traffic_source VARCHAR(64),
+        campaign VARCHAR(128),
+        headline TEXT,
+        subheadline TEXT,
+        cta_text VARCHAR(128),
+        form_variant VARCHAR(64),
+        published_version INT DEFAULT 1,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    // 5. Create index for fast retrieval
     await sql`
       CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads (created_at DESC);
     `;
@@ -86,6 +140,9 @@ export async function initDbSchema() {
     `;
     await sql`
       CREATE INDEX IF NOT EXISTS idx_cms_page_slug ON cms_content (page_slug, section_id);
+    `;
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at DESC);
     `;
 
     schemaInitialized = true;

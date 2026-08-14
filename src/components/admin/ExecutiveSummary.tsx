@@ -45,6 +45,9 @@ export function ExecutiveSummary({
         if (ch !== selectedChannel) return false;
       }
 
+      // If disqualified (less than 50k), exclude from Executive Summary
+      if (s.monto === "menos_50k" || s.monto === "Menos de $50,000" || s.monto === "menos_35k" || s.monto === "Menos de $35,000") return false;
+
       // If custom preset, filter by exact date & time
       if (selectedPreset === "custom") {
         if (!s.submittedAt) return true;
@@ -1020,20 +1023,28 @@ export function ExecutiveSummary({
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#157A5A]">
-                        <svg className="w-3.5 h-3.5 text-[#157A5A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>200 OK (142ms)</span>
-                      </span>
+                      {lead.api_sync_logs?.meta_capi ? (
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${lead.api_sync_logs.meta_capi.status === "success" ? "text-[#157A5A]" : "text-[#B02A24]"}`}>
+                          <svg className={`w-3.5 h-3.5 ${lead.api_sync_logs.meta_capi.status === "success" ? "text-[#157A5A]" : "text-[#B02A24]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={lead.api_sync_logs.meta_capi.status === "success" ? "M5 13l4 4L19 7" : "M6 18L18 6M6 6l12 12"} />
+                          </svg>
+                          <span>{lead.api_sync_logs.meta_capi.status === "success" ? "200 OK" : "Error"}</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold text-[#8A8095]">-</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#157A5A]">
-                        <svg className="w-3.5 h-3.5 text-[#157A5A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>200 OK (118ms)</span>
-                      </span>
+                      {lead.api_sync_logs?.google_ads ? (
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${lead.api_sync_logs.google_ads.status === "success" ? "text-[#157A5A]" : "text-[#B02A24]"}`}>
+                          <svg className={`w-3.5 h-3.5 ${lead.api_sync_logs.google_ads.status === "success" ? "text-[#157A5A]" : "text-[#B02A24]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={lead.api_sync_logs.google_ads.status === "success" ? "M5 13l4 4L19 7" : "M6 18L18 6M6 6l12 12"} />
+                          </svg>
+                          <span>{lead.api_sync_logs.google_ads.status === "success" ? "200 OK" : "Error"}</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold text-[#8A8095]">-</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <span className="text-[11.5px] font-bold px-2.5 py-1 rounded-full bg-[#F1FAF6] text-[#157A5A] border border-[#C6E6D9]">

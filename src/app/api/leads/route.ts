@@ -138,55 +138,62 @@ export async function POST(req: NextRequest) {
     };
 
     // =========================================================================
-    // 3. Autonomous CRM / External API Webhook Dispatch
+    // 3. Autonomous Intelix CRM Dispatch
     // =========================================================================
     let crmWebhookLog: Record<string, unknown> = {
-      status: "none",
-      responseMessage: "Sin webhook externo configurado (Lead persistido en base de datos principal).",
+      status: "sandbox",
+      responseMessage: "Modo sandbox: lead validado, pero INTELIX_API_KEY no configurado.",
     };
 
-      if (webhookConfig?.enabled && webhookConfig.endpointUrl) {
-      const endpoint = webhookConfig.endpointUrl;
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const intelixApiKey = process.env.INTELIX_API_KEY;
+    const intelixBaseUrl = process.env.INTELIX_BASE_URL || "https://api.intelix.mx";
 
-        const webhookRes = await fetch(endpoint, {
-          method: webhookConfig.method || "POST",
+    if (intelixApiKey) {
+      try {
+        const payload = {
+          external_id: folio,
+          nombre_completo: nombre,
+          telefono: celular,
+          correo: email || "",
+          institucion_financiera: institucion || "No especificada",
+          monto_deuda: monto || "No especificado",
+          tipo_deuda: tipoDeuda || "Tarjeta de crédito",
+          dispositivo: device || "Escritorio",
+          referrer: referrer || "Directo",
+          fuente: attribution?.utm_source || "bravo-web",
+          medio: attribution?.utm_medium || "organic",
+          campana: attribution?.utm_campaign || "",
+          gclid: attribution?.gclid || "",
+          fbclid: attribution?.fbclid || "",
+          fecha_registro: nowIso,
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s limit
+
+        const webhookRes = await fetch(`${intelixBaseUrl}/v1/leads`, {
+          method: "POST",
           signal: controller.signal,
           headers: {
             "Content-Type": "application/json",
-            "User-Agent": "Bravo-Mexico-Autonomous-CAPI/1.0",
-            ...(webhookConfig.headers || {}),
+            Authorization: `Bearer ${intelixApiKey}`,
+            "X-Source": "bravo-mexico-web",
+            "User-Agent": "Bravo-Mexico-Autonomous/2.0",
           },
-          body: JSON.stringify({
-            lead_id: folio,
-            folio,
-            nombre,
-            celular,
-            email: email || "",
-            institucion,
-            monto,
-            tipo_deuda: tipoDeuda,
-            submitted_at: nowIso,
-            device: device || "Escritorio",
-            referrer: referrer || "Directo",
-            attribution: attribution || {},
-          }),
+          body: JSON.stringify(payload),
         });
         clearTimeout(timeoutId);
 
-
         const statusText = await webhookRes.text().catch(() => "");
+        
         if (webhookRes.ok) {
           crmWebhookLog = {
             status: "success",
             sentAt: new Date().toISOString(),
             responseCode: webhookRes.status,
-            responseMessage: `Webhook entregado y aceptado exitosamente por el servidor destino (HTTP ${webhookRes.status}).`,
+            responseMessage: `Lead registrado en Intelix CRM (HTTP ${webhookRes.status}).`,
             details: {
-              endpoint,
-              method: webhookConfig.method || "POST",
+              endpoint: `${intelixBaseUrl}/v1/leads`,
               response_snippet: statusText.slice(0, 120),
             },
           };
@@ -195,22 +202,18 @@ export async function POST(req: NextRequest) {
             status: "failed",
             sentAt: new Date().toISOString(),
             responseCode: webhookRes.status,
-            responseMessage: `Fallo en el servidor externo (HTTP ${webhookRes.status}): ${statusText.slice(0, 180) || "Petición rechazada o endpoint no disponible."}`,
+            responseMessage: `Error en Intelix CRM (HTTP ${webhookRes.status}): ${statusText.slice(0, 180)}`,
             details: {
-              endpoint,
-              method: webhookConfig.method || "POST",
+              endpoint: `${intelixBaseUrl}/v1/leads`,
             },
           };
         }
-      } catch (webhookErr: any) {
+      } catch (err: any) {
         crmWebhookLog = {
           status: "failed",
           sentAt: new Date().toISOString(),
-          responseCode: 500,
-          responseMessage: `Error de conexión con la API externa (${endpoint}): ${webhookErr?.message || "Servidor inalcanzable (ECONNREFUSED/Timeout)"}`,
-          details: {
-            endpoint,
-          },
+          responseCode: 0,
+          responseMessage: `Fallo de conexión al CRM: ${err?.message || "Timeout o error de red."}`,
         };
       }
     }
@@ -283,33 +286,7 @@ export async function POST(req: NextRequest) {
 
     const savedLead = inserted[0];
 
-    // =========================================================================
-    // 4. Async Intelix CRM Dispatch (non-blocking, result written to DB)
-    // =========================================================================
-    const intelixPayload = {
-      folio,
-      nombre,
-      celular,
-      email: email || "",
-      institucion: institucion || "Institución bancaria",
-      monto: monto || "Más de $50,000 MXN",
-      tipoDeuda: tipoDeuda || "Tarjeta de crédito",
-      device: device || "Escritorio",
-      referrer: referrer || "Directo",
-      attribution: attribution || {},
-    };
 
-    // Fire-and-don't-await: Intelix call runs after response is sent
-    const intelixBaseUrl =
-      req.nextUrl.origin || `https://${req.headers.get("host") || "localhost:3000"}`;
-
-    fetch(`${intelixBaseUrl}/api/intelix`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(intelixPayload),
-    }).catch((err) =>
-      console.warn("[Intelix] Background sync error:", err?.message)
-    );
 
     // Resolve redirection
     const redirectUrl =

@@ -81,7 +81,7 @@ export function SmartExitIntentModal() {
           </div>
           <div className="flex items-center gap-2">
             <CheckIcon size={16} className="text-[#157A5A] shrink-0" />
-            <span>Asesoría 100% gratuita y sin afectar tu buró.</span>
+            <span>Asesoría inicial gratuita y de carácter informativo.</span>
           </div>
         </div>
 

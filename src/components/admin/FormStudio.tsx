@@ -145,6 +145,12 @@ export function FormStudio() {
   // Save changes
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!config.redirectUrl.startsWith("/")) {
+      alert("⚠️ Gobernanza de Privacidad\nLa URL de redirección debe ser una ruta interna (ej. /gracias) para evitar fugas de datos y asegurar el entorno del usuario.");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -530,210 +536,72 @@ export function FormStudio() {
                     </div>
                   </div>
 
-                  {/* Toggle Webhook Active */}
-                  <div className="p-4 bg-[#FAF8FB] rounded-2xl border border-[#E7E3EC] flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[13.5px] font-bold text-[#17131F]">
-                        Activar Reenvío Automático de Leads vía API / Webhook
-                      </span>
-                      <span className="text-[11.5px] text-[#5B5266]">
-                        Dispara una petición HTTP con el payload del lead cada vez que un usuario completa el formulario.
-                      </span>
-                    </div>
-
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(config.webhookEnabled)}
-                        onChange={(e) => updateConfigField("webhookEnabled", e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-[#E7E3EC] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#157A5A]"></div>
-                    </label>
+                  {/* Toggle Webhook Active (Replaced by Server-Side Integrations) */}
+                  <div className="flex flex-col gap-1 mb-4">
+                    <h3 className="text-[14px] font-extrabold text-[#17131F]">Integraciones del Servidor</h3>
+                    <span className="text-[12px] text-[#5B5266]">
+                      Activa o desactiva las integraciones oficiales pre-configuradas de lado del servidor para el envío seguro de leads.
+                    </span>
                   </div>
 
-                  {config.webhookEnabled && (
-                    <div className="flex flex-col gap-4 p-4 bg-white rounded-2xl border border-[#E7E3EC] shadow-2xs">
-                      {/* Endpoint URL & Method */}
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                        <div className="sm:col-span-3 flex flex-col gap-1">
-                          <label className="text-[11.5px] font-mono font-bold text-[#8A8095] uppercase">
-                            Método HTTP:
-                          </label>
-                          <select
-                            value={config.webhookMethod || "POST"}
-                            onChange={(e) => updateConfigField("webhookMethod", e.target.value as any)}
-                            className="p-2.5 bg-[#FAF8FB] border border-[#C9C1D4] rounded-xl text-[13px] font-bold text-[#17131F] focus:outline-none"
-                          >
-                            <option value="POST">POST</option>
-                            <option value="PUT">PUT</option>
-                          </select>
-                        </div>
-
-                        <div className="sm:col-span-9 flex flex-col gap-1">
-                          <label className="text-[11.5px] font-mono font-bold text-[#8A8095] uppercase">
-                            URL del Endpoint Receptor (API / Webhook):
-                          </label>
-                          <input
-                            type="url"
-                            value={config.webhookUrl || ""}
-                            onChange={(e) => updateConfigField("webhookUrl", e.target.value)}
-                            placeholder="https://api.tu-crm.com/v1/leads o https://hooks.zapier.com/..."
-                            className="p-2.5 bg-[#FAF8FB] border border-[#C9C1D4] rounded-xl text-[13px] font-mono text-[#5B2C72] focus:outline-none"
-                          />
-                        </div>
+                  <div className="flex flex-col gap-4 p-4 bg-white rounded-2xl border border-[#E7E3EC] shadow-2xs">
+                    {/* Intelix CRM Switch */}
+                    <div className="flex items-center justify-between border-b border-[#F0EDF3] pb-4">
+                      <div className="flex flex-col">
+                        <span className="text-[14px] font-bold text-[#17131F]">Intelix CRM</span>
+                        <span className="text-[12px] text-[#8A8095]">Sincronización de leads al CRM de Bravo</span>
                       </div>
-
-                      {/* Custom Headers Editor */}
-                      <div className="flex flex-col gap-2 border-t border-[#F0EDF3] pt-3">
-                        <div className="flex justify-between items-center">
-                          <label className="text-[12px] font-mono font-bold text-[#8A8095] uppercase">
-                            Cabeceras HTTP Personalizadas (Headers / Auth Tokens):
-                          </label>
-                          <button
-                            type="button"
-                            onClick={handleAddHeader}
-                            className="text-[12px] font-bold text-[#5B2C72] hover:underline cursor-pointer"
-                          >
-                            + Añadir Header
-                          </button>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          {(config.webhookHeaders || []).map((header, hIdx) => (
-                            <div key={hIdx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-                              <div className="sm:col-span-5">
-                                <input
-                                  type="text"
-                                  placeholder="Clave (ej. Authorization)"
-                                  value={header.key}
-                                  onChange={(e) => handleEditHeader(hIdx, e.target.value, header.value)}
-                                  className="w-full p-2 bg-[#FAF8FB] border border-[#C9C1D4] rounded-lg text-[12px] font-mono"
-                                />
-                              </div>
-                              <div className="sm:col-span-6">
-                                <input
-                                  type="text"
-                                  placeholder="Valor (ej. Bearer eyJhbGciOi...)"
-                                  value={header.value}
-                                  onChange={(e) => handleEditHeader(hIdx, header.key, e.target.value)}
-                                  className="w-full p-2 bg-[#FAF8FB] border border-[#C9C1D4] rounded-lg text-[12px] font-mono"
-                                />
-                              </div>
-                              <div className="sm:col-span-1 flex justify-center">
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveHeader(hIdx)}
-                                  className="text-[#B02A24] hover:text-red-700 p-1.5 rounded-lg hover:bg-[#FEE4E2] transition-colors cursor-pointer"
-                                  title="Eliminar header"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Custom Redirection Option */}
-                      <div className="flex flex-col gap-2 border-t border-[#F0EDF3] pt-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[12px] font-bold text-[#17131F]">
-                            Redirección Tras Envío a URL Externa Personalizada
-                          </label>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(config.customRedirectEnabled)}
-                            onChange={(e) => updateConfigField("customRedirectEnabled", e.target.checked)}
-                            className="rounded text-[#5B2C72]"
-                          />
-                        </div>
-
-                        {config.customRedirectEnabled && (
-                          <div className="flex flex-col gap-1 mt-1">
-                            <input
-                              type="url"
-                              value={config.customRedirectUrl || ""}
-                              onChange={(e) => updateConfigField("customRedirectUrl", e.target.value)}
-                              placeholder="https://tudominio.com/gracias?lead_id={lead_id}&folio={folio}&nombre={nombre}"
-                              className="p-2.5 bg-[#FAF8FB] border border-[#C9C1D4] rounded-xl text-[12.5px] font-mono text-[#5B2C72]"
-                            />
-                            <span className="text-[11px] text-[#8A8095]">
-                              Puedes usar los comodines <code>{"{lead_id}"}</code>, <code>{"{folio}"}</code>, <code>{"{nombre}"}</code> para pasar parámetros UTM al destino.
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Live Test Webhook Button & Visualizer */}
-                      <div className="border-t border-[#F0EDF3] pt-3 flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[12px] font-mono font-bold text-[#17131F]">
-                            Prueba de Conexión en Vivo:
-                          </span>
-                          <button
-                            type="button"
-                            onClick={handleTestWebhook}
-                            disabled={testingWebhook || !config.webhookUrl}
-                            className={`px-4 py-2 rounded-xl text-[12px] font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
-                              testingWebhook || !config.webhookUrl
-                                ? "bg-[#EAE5EF] text-[#8A8095] cursor-not-allowed"
-                                : "bg-[#5B2C72] hover:bg-[#45205A] text-white shadow-sm"
-                            }`}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span>{testingWebhook ? "Enviando lead de prueba..." : "Probar Webhook en Vivo"}</span>
-                          </button>
-                        </div>
-
-                        {/* Test Result Viewer */}
-                        {webhookTestResult && (
-                          <div
-                            className={`p-3.5 rounded-xl border text-[12px] flex flex-col gap-1.5 ${
-                              webhookTestResult.success
-                                ? "bg-[#F1FAF6] border-[#C6E6D9] text-[#157A5A]"
-                                : "bg-[#FEF3F2] border-[#FECDCA] text-[#B42318]"
-                            }`}
-                          >
-                            <div className="flex justify-between items-center font-bold">
-                              <span className="flex items-center gap-1.5">
-                                {webhookTestResult.success ? (
-                                  <>
-                                    <svg className="w-4 h-4 text-[#157A5A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>Webhook Exitoso (HTTP {webhookTestResult.status})</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <svg className="w-4 h-4 text-[#B42318]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    <span>Error en Webhook (HTTP {webhookTestResult.status || "Fallo"})</span>
-                                  </>
-                                )}
-                              </span>
-                              {webhookTestResult.durationMs && (
-                                <span className="font-mono text-[11px]">{webhookTestResult.durationMs}ms</span>
-                              )}
-                            </div>
-                            {webhookTestResult.responsePreview && (
-                              <pre className="p-2 bg-black/80 text-white font-mono text-[11px] rounded-lg overflow-x-auto">
-                                {webhookTestResult.responsePreview}
-                              </pre>
-                            )}
-                            {webhookTestResult.error && (
-                              <span className="font-semibold">{webhookTestResult.error}</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={true}
+                          disabled
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-[#157A5A] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                      </label>
                     </div>
-                  )}
+
+                    {/* Meta CAPI Switch */}
+                    <div className="flex items-center justify-between border-b border-[#F0EDF3] pb-4">
+                      <div className="flex flex-col">
+                        <span className="text-[14px] font-bold text-[#17131F]">Meta Conversions API (CAPI)</span>
+                        <span className="text-[12px] text-[#8A8095]">Eventos Server-Side para Facebook/Instagram Ads</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={true}
+                          disabled
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-[#157A5A] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                      </label>
+                    </div>
+
+                    {/* Google Ads Switch */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[14px] font-bold text-[#17131F]">Google Offline Conversions</span>
+                        <span className="text-[12px] text-[#8A8095]">GCLID & Enhanced Conversions Server-Side</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={true}
+                          disabled
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-[#157A5A] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-[#FFF8E6] border border-[#F59E0B]/30 rounded-xl">
+                    <p className="text-[12px] text-[#B45309] font-medium leading-relaxed">
+                      <strong>Cumplimiento de Seguridad:</strong> La configuración arbitraria de webhooks (URL, Headers, Methods) y código de rastreo en cliente ha sido deshabilitada por reglas de Gobernanza de Privacidad. Solo integraciones del servidor verificadas están disponibles.
+                    </p>
+                  </div>
                 </div>
               )}
 

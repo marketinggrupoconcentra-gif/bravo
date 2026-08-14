@@ -98,6 +98,26 @@ export async function POST(req: NextRequest) {
 
     const id = `${pageSlug}_${sectionId}`.toLowerCase();
 
+    // --- CLAIMS GOVERNANCE VALIDATION ---
+    const allText = [title, subtitle, badge, description, primaryCtaText, secondaryCtaText].filter(Boolean).join(" ").toLowerCase();
+    // Ignore valid claim placeholders like {{claim:cat}}
+    const textWithoutClaims = allText.replace(/\{\{claim:[^}]+\}\}/g, "");
+    
+    const regulatedPatterns = ["%", "cat", "garantizado", "protegido", "buró", "buro", "quita", "años", "meses", "clientes", "deudas liquidadas", "reviews", "rating"];
+    
+    // Check for regulated patterns in raw text
+    for (const pattern of regulatedPatterns) {
+      // Create a regex to match the pattern as a whole word (or standalone symbol for %)
+      const regex = pattern === "%" ? /%/ : new RegExp(`\\b${pattern}\\b`, "i");
+      if (regex.test(textWithoutClaims)) {
+        return NextResponse.json(
+          { success: false, error: `Governance Block: Regulated pattern "${pattern}" detected in raw text. You must use the Claims Registry (e.g., {{claim:id}}) for regulated promises.` },
+          { status: 403 }
+        );
+      }
+    }
+    // ------------------------------------
+
     const upserted = await sql`
       INSERT INTO cms_content (
         id,
