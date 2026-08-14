@@ -16,8 +16,6 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
   const [activeSubTab, setActiveSubTab] = useState<SubModuleTab>("meta_capi");
 
   // Meta CAPI State
-  const [metaPixelId, setMetaPixelId] = useState(config.metaPixelId || "1849203847291034");
-  const [metaAccessToken, setMetaAccessToken] = useState("");
   const [metaTestCode, setMetaTestCode] = useState("TEST48291");
   const [metaEventName, setMetaEventName] = useState<"Lead" | "QualifiedLead" | "AgreementAccepted" | "Contact">("Lead");
   const [selectedLeadId, setSelectedLeadId] = useState<string>(submissions[0]?.id || "");
@@ -89,13 +87,9 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pixelId: metaPixelId,
-          accessToken: metaAccessToken || undefined,
           testEventCode: metaTestCode || undefined,
           eventName: metaEventName,
           lead: selectedLead,
-          value: selectedLead.monto ? parseInt(selectedLead.monto.replace(/\\D/g, ""), 10) || 0 : 0,
-          currency: "MXN",
         }),
       });
 
@@ -295,18 +289,6 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[12.5px] font-bold text-[#17131F] mb-1">
-                    Meta Pixel ID:
-                  </label>
-                  <input
-                    type="text"
-                    value={metaPixelId}
-                    onChange={(e) => setMetaPixelId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-[#C9C1D4] rounded-xl text-[13.5px] font-mono bg-[#FAF8FB] focus:bg-white focus:outline-none focus:border-[#5B2C72]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12.5px] font-bold text-[#17131F] mb-1">
                     Test Event Code (Opcional):
                   </label>
                   <input
@@ -316,22 +298,6 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
                     placeholder="Ej: TEST12345"
                     className="w-full px-3.5 py-2.5 border border-[#C9C1D4] rounded-xl text-[13.5px] font-mono bg-[#FAF8FB] focus:bg-white focus:outline-none focus:border-[#5B2C72]"
                   />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-[12.5px] font-bold text-[#17131F] mb-1">
-                    Meta Access Token (System User / Graph API):
-                  </label>
-                  <input
-                    type="password"
-                    value={metaAccessToken}
-                    onChange={(e) => setMetaAccessToken(e.target.value)}
-                    placeholder="EAA..."
-                    className="w-full px-3.5 py-2.5 border border-[#C9C1D4] rounded-xl text-[13px] font-mono bg-[#FAF8FB] focus:bg-white focus:outline-none focus:border-[#5B2C72]"
-                  />
-                  <span className="text-[11px] text-[#8A8095] mt-1 block">
-                    Si se deja vacío, el emisor funcionará en modo sandbox validando el payload SHA-256 localmente.
-                  </span>
                 </div>
               </div>
 

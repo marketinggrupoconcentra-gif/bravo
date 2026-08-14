@@ -133,6 +133,14 @@ export async function initDbSchema() {
       );
     `;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS rate_limits (
+        ip VARCHAR(64) PRIMARY KEY,
+        count INT DEFAULT 1,
+        expires_at TIMESTAMPTZ NOT NULL
+      );
+    `;
+
     // 5. Create index for fast retrieval
     await sql`
       CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads (created_at DESC);

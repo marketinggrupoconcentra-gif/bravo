@@ -33,9 +33,7 @@ function InPageHeatmapContent() {
     if (isUrlHeatmap) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEnabled(true);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHeatmapMode(modeParam);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpacity(opacityParam);
     }
 

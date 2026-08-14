@@ -8,21 +8,22 @@ export function LandingsStudio() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [editingLanding, setEditingLanding] = useState<any>(null);
 
-  useEffect(() => {
-    fetchLandings();
-  }, []);
-
   const fetchLandings = async () => {
     try {
       const res = await fetch("/api/admin/landings");
-      if (res.ok) {
-        const data = await res.json();
-        setLandings(data || []);
+      const data = await res.json();
+      if (data.success) {
+        setLandings(data.pages);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch landings:", err);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchLandings();
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

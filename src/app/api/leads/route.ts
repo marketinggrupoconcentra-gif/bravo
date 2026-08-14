@@ -18,26 +18,37 @@ function formatMetaPhone(phone: string): string {
   return digits;
 }
 
-// In-memory rate limiting map
-const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
+async function checkGlobalRateLimit(ip: string): Promise<boolean> {
+  try {
+    const limitWindowMs = 60 * 1000; // 1 minute
+    const maxRequests = 5;
+    
+    // Cleanup old records occasionally (1% chance)
+    if (Math.random() < 0.01) {
+      await sql`DELETE FROM rate_limits WHERE expires_at < NOW()`;
+    }
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const limitWindowMs = 60 * 1000; // 1 minute
-  const maxRequests = 5;
+    const rows = await sql`
+      INSERT INTO rate_limits (ip, count, expires_at)
+      VALUES (${ip}, 1, NOW() + (${limitWindowMs} || ' milliseconds')::interval)
+      ON CONFLICT (ip) DO UPDATE SET 
+        count = CASE 
+          WHEN rate_limits.expires_at < NOW() THEN 1 
+          ELSE rate_limits.count + 1 
+        END,
+        expires_at = CASE 
+          WHEN rate_limits.expires_at < NOW() THEN NOW() + (${limitWindowMs} || ' milliseconds')::interval 
+          ELSE rate_limits.expires_at 
+        END
+      RETURNING count;
+    `;
 
-  const record = rateLimitMap.get(ip);
-  if (!record || record.expiresAt < now) {
-    rateLimitMap.set(ip, { count: 1, expiresAt: now + limitWindowMs });
-    return true;
+    const count = rows[0]?.count || 1;
+    return count <= maxRequests;
+  } catch (error) {
+    console.error("[Rate Limit Error]", error);
+    return true; // Fail open if DB is down
   }
-
-  if (record.count >= maxRequests) {
-    return false;
-  }
-
-  record.count += 1;
-  return true;
 }
 
 // GET: Fetch all leads from Neon Postgres with api_sync_logs
@@ -92,7 +103,10 @@ export async function POST(req: NextRequest) {
       req.headers.get("x-real-ip") ||
       "127.0.0.1";
 
-    if (!checkRateLimit(clientIp)) {
+    await initDbSchema();
+
+    const isAllowed = await checkGlobalRateLimit(clientIp);
+    if (!isAllowed) {
       return NextResponse.json(
         { success: false, error: "Too many requests. Please try again later." },
         { status: 429 }
@@ -108,7 +122,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await initDbSchema();
 
     let body: Record<string, unknown>;
     try {

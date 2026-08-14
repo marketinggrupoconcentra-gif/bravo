@@ -15,6 +15,20 @@ const BASE = "http://127.0.0.1:3000";
 let passed = 0;
 let failed = 0;
 
+import fs from "fs";
+import path from "path";
+
+// Load .env.local if needed
+if (!process.env.ADMIN_SECRET_KEY) {
+  try {
+    const envFile = fs.readFileSync(path.join(process.cwd(), ".env.local"), "utf8");
+    const match = envFile.match(/^ADMIN_SECRET_KEY=["']?(.*?)["']?$/m);
+    if (match) {
+      process.env.ADMIN_SECRET_KEY = match[1];
+    }
+  } catch {}
+}
+
 function ok(label) {
   console.log(`  ✅ ${label}`);
   passed++;
@@ -64,13 +78,43 @@ async function testAdminAuth() {
   }
 
   // Fake cookie regression test
-  const fakeCookieRes = await fetch(`${BASE}/api/admin/claims`, {
-    headers: { Cookie: "bravo_admin_session=some-fake-string" }
-  });
-  if (fakeCookieRes.status === 401) {
-    ok("GET /api/admin/claims with fake cookie → 401");
+  const fakeTokenHeaders = { Cookie: "bravo_admin_token=fake-token" };
+  
+  const fakeClaimsRes = await fetch(`${BASE}/api/admin/claims`, { headers: fakeTokenHeaders });
+  if (fakeClaimsRes.status === 401) {
+    ok("GET /api/admin/claims with fake token → 401");
   } else {
-    fail("GET /api/admin/claims with fake cookie should be 401", `got ${fakeCookieRes.status}`);
+    fail("GET /api/admin/claims with fake token should be 401", `got ${fakeClaimsRes.status}`);
+  }
+
+  // Regression tests for Leads and CMS APIs
+  const fakeLeadsGet = await fetch(`${BASE}/api/leads`, { headers: fakeTokenHeaders });
+  if (fakeLeadsGet.status === 401) {
+    ok("GET /api/leads with fake token → 401");
+  } else {
+    fail("GET /api/leads with fake token should be 401", `got ${fakeLeadsGet.status}`);
+  }
+
+  const fakeLeadsPatch = await fetch(`${BASE}/api/leads/123`, { 
+    method: "PATCH", 
+    headers: { "Content-Type": "application/json", ...fakeTokenHeaders },
+    body: JSON.stringify({ status: "Contactado" })
+  });
+  if (fakeLeadsPatch.status === 401) {
+    ok("PATCH /api/leads/:id with fake token → 401");
+  } else {
+    fail("PATCH /api/leads/:id with fake token should be 401", `got ${fakeLeadsPatch.status}`);
+  }
+
+  const fakeCmsPost = await fetch(`${BASE}/api/cms`, { 
+    method: "POST", 
+    headers: { "Content-Type": "application/json", ...fakeTokenHeaders },
+    body: JSON.stringify({ pageSlug: "test" })
+  });
+  if (fakeCmsPost.status === 401) {
+    ok("POST /api/cms with fake token → 401");
+  } else {
+    fail("POST /api/cms with fake token should be 401", `got ${fakeCmsPost.status}`);
   }
 }
 
@@ -202,7 +246,11 @@ console.log("\n── 5. Claims Admin API Validation ─────────
 
 async function testClaimsValidation() {
   const email = process.env.ADMIN_EMAIL || "admin@bravo.mx";
-  const password = process.env.ADMIN_PASSWORD || "Bravo2026!";
+  const password = process.env.ADMIN_SECRET_KEY;
+  if (!password) {
+    fail("ADMIN_SECRET_KEY is not defined in environment");
+    return;
+  }
   
   const loginRes = await post("/api/auth/login", { email, password });
   let adminCookie = "";

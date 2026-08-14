@@ -27,18 +27,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      pixelId,
-      accessToken,
       testEventCode,
       eventName = "Lead",
       lead,
-      value = 75000,
-      currency = "MXN",
     } = body;
+
+    const pixelId = process.env.META_PIXEL_ID;
+    const accessToken = process.env.META_CAPI_TOKEN;
 
     if (!pixelId) {
       return NextResponse.json(
-        { success: false, error: "Pixel ID de Meta es requerido." },
+        { success: false, error: "Pixel ID de Meta no configurado en servidor." },
         { status: 400 }
       );
     }
@@ -55,11 +54,7 @@ export async function POST(req: NextRequest) {
 
     const unixTime = Math.floor(Date.now() / 1000);
 
-    let parsedValue = 0;
-    if (lead?.monto) {
-      const parsed = parseInt(lead.monto.replace(/\\D/g, ""), 10);
-      if (!isNaN(parsed)) parsedValue = parsed;
-    }
+
 
     // Build standard Meta CAPI event payload
     const eventPayload: Record<string, unknown> = {
@@ -80,8 +75,6 @@ export async function POST(req: NextRequest) {
         external_id: lead?.folio ? [sha256(lead.folio)] : undefined,
       },
       custom_data: {
-        currency: currency,
-        value: Number(value) || parsedValue,
         content_name: `Programa Liquidación Bravo - ${lead?.institucion || "Deuda Bancaria"}`,
         content_category: "Servicios Financieros",
         lead_status: lead?.status || "Nuevo",

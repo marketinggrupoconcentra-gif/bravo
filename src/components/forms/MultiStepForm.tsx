@@ -171,8 +171,7 @@ export function MultiStepForm() {
     const instName = getInstitutionDisplay(formData.institucion, formData.otraInstitucionNombre);
     const debtName = getDebtTypeDisplay(formData.tipoDeuda);
     const amtName = getAmountDisplay(formData.amount);
-    // eslint-disable-next-line react-hooks/purity
-    const folioCode = `BR-${Date.now().toString().slice(-6)}`;
+    const folioCode = `BR-${crypto.randomUUID().split("-")[0].toUpperCase()}-${crypto.randomUUID().split("-")[1].toUpperCase()}`;
     const deviceType =
       typeof navigator !== "undefined" && navigator.userAgent.includes("Mobile")
         ? "M\u00f3vil"
