@@ -32,6 +32,7 @@ import {
   FormStudioConfig,
   DEFAULT_FORM_STUDIO_CONFIG,
 } from "@/config/formPresets";
+import { CustomSelect } from "@/components/forms/CustomSelect";
 
 export function MultiStepForm() {
   const [studioConfig, setStudioConfig] = useState<FormStudioConfig>(DEFAULT_FORM_STUDIO_CONFIG);
@@ -525,42 +526,13 @@ export function MultiStepForm() {
                 )}
               </div>
 
-              <div className="relative">
-                <select
-                  className={`w-full p-3.5 pr-10 border rounded-[10px] text-[15px] min-h-[50px] focus:outline-none appearance-none bg-white font-medium cursor-pointer transition-all ${
-                    formData.institucion
-                      ? "border-[#5B2C72] text-[#17131F] bg-[#FDFBFE]"
-                      : "border-[#C9C1D4] text-[#5B5266]"
-                  }`}
-                  value={formData.institucion || ""}
-                  onChange={(e) => updateData("institucion", e.target.value)}
-                  required
-                >
-                  <option value="">{dropdownPlaceholder}</option>
-                  {currentInstitutionGroups.map((group) => (
-                    <optgroup
-                      key={group.group}
-                      label={group.group}
-                      className="font-bold text-[#5B2C72] bg-[#FBFAFC]"
-                    >
-                      {group.options.map((opt) => (
-                        <option
-                          key={opt.value}
-                          value={opt.value}
-                          className="text-[#17131F] font-normal py-1"
-                        >
-                          {opt.label}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#5B5266]">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <CustomSelect
+                groups={currentInstitutionGroups}
+                value={formData.institucion || ""}
+                onChange={(val) => updateData("institucion", val)}
+                placeholder={dropdownPlaceholder}
+                required
+              />
 
               {/* Specific Text Field if "Otra institución no listada" was chosen */}
               {formData.institucion === "otra_institucion" && (
