@@ -1,8 +1,10 @@
 import { neon } from "@neondatabase/serverless";
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_bBGYmj0w8qsU@ep-shy-wildflower-aw8lm8ot-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL must be set in environment variables.");
+}
 
 export const sql = neon(connectionString);
 

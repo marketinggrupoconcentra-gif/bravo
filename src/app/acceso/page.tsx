@@ -15,7 +15,7 @@ export default function AccesoPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -26,20 +26,27 @@ export default function AccesoPage() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      const cleanEmail = email.trim().toLowerCase();
-      // Authorized admin credentials
-      if (
-        (cleanEmail === "admin@bravo.mx" || cleanEmail === "admin@bravocredito.com" || cleanEmail.includes("admin")) &&
-        password === "Bravo2026!"
-      ) {
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Fallback flag for UI components that check client-side state
+        // The real auth is now in the HTTP-Only cookie handled by Middleware
         try {
           sessionStorage.setItem("bravo_admin_auth", "true");
           sessionStorage.setItem(
             "bravo_admin_user",
             JSON.stringify({
               name: "Administrador de Operaciones",
-              email: cleanEmail,
+              email: email.trim().toLowerCase(),
               role: "Super Admin",
             })
           );
@@ -49,9 +56,12 @@ export default function AccesoPage() {
         router.push("/admin");
       } else {
         setIsLoading(false);
-        setError("Usuario o contraseña incorrectos. Verifica tus accesos autorizados.");
+        setError(data.error || "Usuario o contraseña incorrectos.");
       }
-    }, 450);
+    } catch (err) {
+      setIsLoading(false);
+      setError("Error de conexión al servidor.");
+    }
   };
 
   return (

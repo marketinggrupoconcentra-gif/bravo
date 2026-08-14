@@ -370,8 +370,9 @@ export function MultiStepForm() {
                 handleNext();
               }
         }
-        className="flex flex-col gap-[18px]"
+        className="w-full"
       >
+        <fieldset disabled={isSubmitting} className="border-0 p-0 m-0 w-full flex flex-col gap-[20px] sm:gap-[24px]">
         {/* STEP 1: Amount Selection */}
         {step === 0 && (
           <div className="flex flex-col gap-[14px]">
@@ -849,6 +850,7 @@ export function MultiStepForm() {
             </div>
           )}
         </div>
+        </fieldset>
       </form>
     </div>
   );

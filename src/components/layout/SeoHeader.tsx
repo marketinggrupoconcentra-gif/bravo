@@ -81,8 +81,8 @@ export function SeoHeader() {
             </nav>
           </div>
 
-          {/* Right: Actions */}
-          <div className="hidden md:flex items-center gap-[16px]">
+          {/* Right: Actions — only on desktop (matches nav breakpoint at lg) */}
+          <div className="hidden lg:flex items-center gap-[16px]">
             <Link
               href="/formulario"
               onClick={handleCtaClick}
@@ -119,43 +119,52 @@ export function SeoHeader() {
           </button>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
+        {/* Mobile Navigation Dropdown + Overlay */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-[#E7E3EC] bg-white px-6 py-5 shadow-xl absolute w-full left-0 top-[66px] z-50 flex flex-col gap-4">
-            <nav className="flex flex-col gap-2 text-[15.5px]">
-              {navLinks.map((link) => {
-                const active = isLinkActive(link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    aria-current={active ? "page" : undefined}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
-                      active
-                        ? "bg-[#F5EDF9] text-[#5B2C72] font-bold border-l-4 border-[#5B2C72]"
-                        : "text-[#5B5266] hover:text-[#5B2C72] hover:bg-[#FAF8FB] font-medium"
-                    }`}
-                  >
-                    <span>{link.label}</span>
-                    {active && <span className="w-2 h-2 rounded-full bg-[#5B2C72]" />}
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="pt-2">
-              <Link
-                href="/formulario"
-                onClick={() => {
-                  handleCtaClick();
-                  setIsMenuOpen(false);
-                }}
-                className="flex w-full items-center justify-center rounded-full bg-[#5B2C72] py-3.5 text-[16px] font-extrabold text-white shadow-xs"
-              >
-                Revisar mi caso
-              </Link>
+          <>
+            {/* Overlay backdrop */}
+            <div
+              className="lg:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+              onClick={() => setIsMenuOpen(false)}
+              aria-hidden="true"
+              style={{ top: 66 }}
+            />
+            <div className="lg:hidden border-t border-[#E7E3EC] bg-white px-5 py-5 shadow-xl absolute w-full left-0 top-[66px] z-50 flex flex-col gap-4">
+              <nav className="flex flex-col gap-1.5 text-[15.5px]">
+                {navLinks.map((link) => {
+                  const active = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-all ${
+                        active
+                          ? "bg-[#F5EDF9] text-[#5B2C72] font-bold border-l-4 border-[#5B2C72]"
+                          : "text-[#5B5266] hover:text-[#5B2C72] hover:bg-[#FAF8FB] font-medium"
+                      }`}
+                    >
+                      <span>{link.label}</span>
+                      {active && <span className="w-2 h-2 rounded-full bg-[#5B2C72]" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <div className="pt-1 pb-1 flex flex-col gap-2">
+                <Link
+                  href="/formulario"
+                  onClick={() => {
+                    handleCtaClick();
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex w-full items-center justify-center rounded-full bg-[#5B2C72] py-3.5 text-[16px] font-extrabold text-white shadow-xs hover:bg-[#45205A] transition-colors"
+                >
+                  Revisar mi caso
+                </Link>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </header>
     </>

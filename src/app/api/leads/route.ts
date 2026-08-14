@@ -145,11 +145,15 @@ export async function POST(req: NextRequest) {
       responseMessage: "Sin webhook externo configurado (Lead persistido en base de datos principal).",
     };
 
-    if (webhookConfig?.enabled && webhookConfig.endpointUrl) {
+      if (webhookConfig?.enabled && webhookConfig.endpointUrl) {
       const endpoint = webhookConfig.endpointUrl;
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
         const webhookRes = await fetch(endpoint, {
           method: webhookConfig.method || "POST",
+          signal: controller.signal,
           headers: {
             "Content-Type": "application/json",
             "User-Agent": "Bravo-Mexico-Autonomous-CAPI/1.0",
@@ -170,6 +174,8 @@ export async function POST(req: NextRequest) {
             attribution: attribution || {},
           }),
         });
+        clearTimeout(timeoutId);
+
 
         const statusText = await webhookRes.text().catch(() => "");
         if (webhookRes.ok) {

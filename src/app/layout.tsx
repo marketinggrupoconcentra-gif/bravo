@@ -42,17 +42,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="es-MX"
-      className={`${figtree.variable} ${sourceSerif4.variable} h-full antialiased`}
-    >
-      <head>
-        <TrackingTagsProvider>
+    <TrackingTagsProvider>
+      <html
+        lang="es-MX"
+        className={`${figtree.variable} ${sourceSerif4.variable} h-full antialiased`}
+      >
+        <head>
           <DynamicTrackingHead />
-        </TrackingTagsProvider>
-      </head>
-      <body className="min-h-full flex flex-col font-sans bg-[#F1EEF3] text-[#17131F]">
-        <TrackingTagsProvider>
+        </head>
+        <body className="min-h-full flex flex-col font-sans bg-[#F1EEF3] text-[#17131F]">
           <DynamicTrackingBodyNoScript />
           <ContactChannelsProvider>
             <CmsProvider>
@@ -63,8 +61,8 @@ export default function RootLayout({
               {children}
             </CmsProvider>
           </ContactChannelsProvider>
-        </TrackingTagsProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </TrackingTagsProvider>
   );
 }

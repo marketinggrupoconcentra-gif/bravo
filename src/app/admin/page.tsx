@@ -23,6 +23,7 @@ import { AudiencesStudio } from "@/components/admin/AudiencesStudio";
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("summary");
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [submissions, setSubmissions] = useState<FormSubmissionLog[]>([]);
   const [actions, setActions] = useState<UserActionLog[]>([]);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
@@ -63,8 +64,9 @@ export default function AdminDashboardPage() {
     return () => clearInterval(interval);
   }, [isAuthChecked]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
+      await fetch("/api/auth/logout", { method: "POST" });
       sessionStorage.removeItem("bravo_admin_auth");
       sessionStorage.removeItem("bravo_admin_user");
     } catch {
@@ -93,6 +95,8 @@ export default function AdminDashboardPage() {
         setIsCollapsed={setIsCollapsed}
         leadsCount={submissions.length}
         eventsCount={actions.length}
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
       />
 
       {/* 2. Main Content Area */}
@@ -101,8 +105,18 @@ export default function AdminDashboardPage() {
         <header className="bg-white border-b border-[#E7E3EC] sticky top-0 z-30 shadow-2xs">
           <div className="px-6 py-3.5 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <span className="font-extrabold text-[16px] text-[#17131F]">
-                Bravo México · Portal de Administración
+              {/* Mobile hamburger */}
+              <button
+                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-[#F5EDF9] text-[#5B2C72] hover:bg-[#EDD9FA] transition-colors cursor-pointer mr-1"
+                onClick={() => setIsMobileOpen(true)}
+                aria-label="Abrir menú"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <span className="font-extrabold text-[14px] sm:text-[16px] text-[#17131F] truncate">
+                Bravo · Admin
               </span>
               <div className="hidden sm:inline-flex items-center gap-1.5 bg-[#F1FAF6] border border-[#C6E6D9] text-[#157A5A] text-[11.5px] font-mono font-bold px-2.5 py-0.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#157A5A]" />
@@ -127,7 +141,7 @@ export default function AdminDashboardPage() {
         </header>
 
         {/* Content View */}
-        <main className="p-6 sm:p-8 flex-grow max-w-[1400px] w-full mx-auto">
+        <main className="p-3 sm:p-6 lg:p-8 flex-grow max-w-[1400px] w-full mx-auto">
           {/* TAB 0: Executive Summary & Performance Metrics */}
           {activeTab === "summary" && (
             <ExecutiveSummary

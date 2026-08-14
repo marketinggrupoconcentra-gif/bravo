@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { useEffect } from "react";
 
 export type AdminTab =
   | "summary"
@@ -22,6 +23,9 @@ interface AdminSidebarProps {
   setIsCollapsed: (collapsed: boolean) => void;
   leadsCount: number;
   eventsCount: number;
+  // Mobile drawer
+  isMobileOpen?: boolean;
+  setIsMobileOpen?: (open: boolean) => void;
 }
 
 export function AdminSidebar({
@@ -31,7 +35,18 @@ export function AdminSidebar({
   setIsCollapsed,
   leadsCount,
   eventsCount,
+  isMobileOpen = false,
+  setIsMobileOpen,
 }: AdminSidebarProps) {
+  // Prevent body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobileOpen]);
   const navItems: {
     id: AdminTab;
     label: string;
@@ -144,12 +159,47 @@ export function AdminSidebar({
     },
   ];
 
+  const closeMobile = () => setIsMobileOpen?.(false);
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileOpen]);
+
   return (
-    <aside
-      className={`bg-[#170B1F] text-white flex flex-col justify-between border-r border-[#341C3D] transition-all duration-300 ease-in-out shrink-0 sticky top-0 h-screen z-40 select-none ${
-        isCollapsed ? "w-[76px]" : "w-[320px] xl:w-[340px]"
-      }`}
-    >
+    <>
+      {/* ── Mobile overlay backdrop ── */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── Sidebar (drawer on mobile, sticky on desktop) ── */}
+      <aside
+        className={`
+          bg-[#170B1F] text-white flex flex-col justify-between border-r border-[#341C3D]
+          transition-all duration-300 ease-in-out shrink-0 select-none z-50
+          fixed top-0 left-0 h-full
+          lg:sticky lg:top-0 lg:h-screen lg:translate-x-0
+          ${
+            /* Mobile open/close — translate-x controls visibility */
+            isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }
+          ${
+            isCollapsed ? "w-[76px]" : "w-[300px] sm:w-[320px] xl:w-[340px]"
+          }
+        `}
+      >
       {/* Top Brand & Header */}
       <div className="flex flex-col min-h-0 flex-1">
         <div className="px-5 py-4 flex items-center justify-between border-b border-[#341C3D] h-[72px] shrink-0">
@@ -228,7 +278,7 @@ export function AdminSidebar({
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => { setActiveTab(item.id); closeMobile(); }}
                 className={`w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-left relative group ${
                   isActive
                     ? "bg-gradient-to-r from-[#5B2C72] to-[#45205A] text-white shadow-md border-l-4 border-l-[#5ECBDB] border-y border-r border-[#884FA4]/40"
@@ -314,5 +364,6 @@ export function AdminSidebar({
         </Link>
       </div>
     </aside>
+    </>
   );
 }
