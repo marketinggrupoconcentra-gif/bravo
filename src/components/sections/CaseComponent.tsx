@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics/track";
@@ -28,21 +28,10 @@ export function CaseComponent() {
   const [debtAmount, setDebtAmount] = useState<number>(180000);
   const [selectedMonths, setSelectedMonths] = useState<number>(22);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
-  const [displayedValues, setDisplayedValues] = useState({
-    debt: 180000,
-    months: 22,
-    discountPercent: 59,
-    settlementAmount: 73800,
-    savingsAmount: 106200,
-    monthlyContribution: 3354,
-    settlementRatioPercent: 41,
-  });
 
-  // No discount formula — each case is evaluated individually.
-  // The slider helps users communicate their situation; the result
-  // directs them to a personalized evaluation, not a computed number.
-
-
+  // No calculated discount, settlement, or savings figures are shown.
+  // Each case is evaluated individually by an advisor.
+  // This tool only helps users communicate their situation.
   // Trigger smooth calculation state
   const handleAmountChange = (newAmount: number) => {
     setDebtAmount(newAmount);
@@ -195,7 +184,7 @@ export function CaseComponent() {
                 {/* Term Selector */}
                 <div className="flex flex-col gap-2 pt-2 border-t border-[#EAE5EF]">
                   <label className="text-[14px] font-bold text-[#17131F]">
-                    Plazo estimado para tu plan de ahorro:
+                    Plazo preferido para tu plan de ahorro:
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {termOptions.map((term) => {
@@ -285,7 +274,7 @@ export function CaseComponent() {
                     <svg className="w-4 h-4 text-[#5ECBDB] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Al finalizar el proceso recibes una Carta Finiquito oficial como constancia de liquidación total.</span>
+                    <span>Cuando el proceso de liquidación con el acreedor se formaliza, recibes la documentación correspondiente al convenio como constancia oficial.</span>
                   </div>
                 </div>
               </div>

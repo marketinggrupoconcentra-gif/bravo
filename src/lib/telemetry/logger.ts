@@ -65,7 +65,8 @@ const ACTIONS_KEY = "bravo_user_actions_log";
 // 1. Log a Form Submission (Saves to Neon DB via API + Local Storage + Optional Webhook)
 export function logFormSubmission(
   submission: Omit<FormSubmissionLog, "id" | "submittedAt" | "status">,
-  customWebhookConfig?: Record<string, any>
+  // customWebhookConfig reserved for future server-side webhook configuration (not active)
+  _customWebhookConfig?: Record<string, string | number | boolean | null>
 ): FormSubmissionLog {
   const deviceType =
     typeof navigator !== "undefined" && navigator.userAgent.includes("Mobile")

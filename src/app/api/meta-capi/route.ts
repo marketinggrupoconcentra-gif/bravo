@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,11 @@ function formatMetaPhone(phone: string): string {
   return digits;
 }
 
+// PRIVATE: requires valid admin session (sends lead PII to Meta CAPI)
 export async function POST(req: NextRequest) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     const body = await req.json();
     const {

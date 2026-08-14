@@ -12,7 +12,16 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Temporary extraction directories (not application source):
+    "temp-unzip/**",
+    "temp-unzip-tablero/**",
+    // E2E tests use Playwright typings:
+    "tests/**",
+    // Public and node_modules:
+    "public/**",
+    "node_modules/**",
   ]),
 ]);
 
 export default eslintConfig;
+

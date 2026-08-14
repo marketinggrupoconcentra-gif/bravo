@@ -54,7 +54,7 @@ export function captureAttribution(): AttributionData {
   const now = Date.now();
 
   // 1. Meta (Facebook / Instagram) Cookies & Click IDs
-  let fbclid = searchParams.get("fbclid") || undefined;
+  const fbclid = searchParams.get("fbclid") || undefined;
   let fbc = getCookie("_fbc");
   let fbp = getCookie("_fbp");
 

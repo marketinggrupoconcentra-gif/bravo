@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
+// PRIVATE: requires valid admin session
 export async function GET() {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     // 1. Initialize schema if not exists
     await initDbSchema();

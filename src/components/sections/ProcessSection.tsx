@@ -259,7 +259,7 @@ export function ProcessSection() {
                   <strong className="text-white font-bold block mb-0.5">
                     El orden es fundamental:
                   </strong>
-                  Primero definimos un plan de ahorro mensual a tu medida. Cuando cuentas con el fondo suficiente, negociamos la liquidación con la institución para obtener el mayor descuento posible.
+                  Primero definimos un plan de ahorro mensual a tu medida. Cuando cuentas con el fondo suficiente, nos ponemos en contacto con la institución para iniciar el proceso de negociación.
                 </div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export function ProcessSection() {
                 Revisar mi caso
               </Link>
               <div className="text-[13px] text-[#C7B8D2] font-medium">
-                Tiempo estimado de contacto: 24 h hábiles
+                Un asesor revisará tu caso y se pondrá en contacto contigo.
               </div>
             </div>
           </div>
@@ -288,7 +288,7 @@ export function ProcessSection() {
                 src="/images/brand/human/bravo-household-planning.webp"
                 alt="Pareja revisando y organizando sus finanzas en casa con tranquilidad"
                 fill
-                priority
+                loading="lazy"
                 sizes="(max-width: 1024px) 100vw, 560px"
                 className="object-cover object-[50%_35%] group-hover:scale-[1.02] transition-transform duration-500"
               />
@@ -331,7 +331,7 @@ export function ProcessSection() {
                     </div>
                     <div className="flex items-start gap-1.5 text-[12.5px] leading-[1.4] text-[#17131F]">
                       <NegotiationIcon size={14} className="text-[#0F5D45] shrink-0 mt-0.5" />
-                      <span>Defensa ante los acreedores.</span>
+                      <span>Negociación y acompañamiento en el proceso.</span>
                     </div>
                   </div>
                 </div>

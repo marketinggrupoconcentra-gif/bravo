@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
+// PATCH: Update lead status — PRIVATE: requires valid admin session
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     await initDbSchema();
     const { id } = await context.params;
@@ -28,10 +33,11 @@ export async function PATCH(
     `;
 
     return NextResponse.json({ success: true, updated: updated[0] });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Failed to update lead";
     console.error("[PATCH /api/leads/[id] Error]", error);
     return NextResponse.json(
-      { success: false, error: error?.message || "Failed to update lead" },
+      { success: false, error: msg },
       { status: 500 }
     );
   }

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
+// PRIVATE: requires valid admin session (processes lead PII)
 export async function POST(req: NextRequest) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     const body = await req.json();
     const { conversionAction, leads = [] } = body;

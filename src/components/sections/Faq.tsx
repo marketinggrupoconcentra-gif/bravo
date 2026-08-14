@@ -16,11 +16,11 @@ const faqItems: FaqItem[] = [
   },
   {
     q: "¿Cuánto tiempo dura el programa de liquidación?",
-    a: "La duración depende del monto total de tu deuda y tu capacidad mensual de ahorro. En promedio, los planes se estructuran entre 12 y 24 meses con mensualidades fijas acordadas.",
+    a: "La duración depende del monto de la deuda, la capacidad de ahorro mensual y las condiciones particulares de cada caso. Un asesor te presentará una propuesta estructurada según tu situación específica.",
   },
   {
-    q: "¿Se borra mi historial del Buró de Crédito inmediatamente?",
-    a: "No. Ninguna institución legítima puede borrar registros de forma inmediata. Al liquidar tu deuda con descuento, el banco emite una carta finiquito oficial y reporta la cuenta como saldada.",
+    q: "¿Una liquidación con descuento puede tener implicaciones en mi historial crediticio?",
+    a: "Sí. La forma en que una cuenta se reporta depende del acreedor y de las condiciones del convenio. Antes de aceptar una alternativa, revisa cómo será registrada la liquidación y conserva la documentación correspondiente.",
   },
   {
     q: "¿Por qué no se consulta el Buró de Crédito en este formulario?",

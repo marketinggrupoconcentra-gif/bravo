@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
-// GET: Fetch recent analytics events from Neon Postgres
+// GET: Fetch recent analytics events — PRIVATE: requires valid admin session
 export async function GET(req: NextRequest) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     await initDbSchema();
 

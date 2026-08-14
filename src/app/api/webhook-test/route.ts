@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +12,9 @@ const INTEGRATION_ENDPOINTS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
-  // Auth is enforced by middleware for /api/admin/* routes,
-  // but we also validate here for defense-in-depth.
-  const adminToken = req.cookies.get("bravo_admin_token")?.value;
-  if (!adminToken || adminToken !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-  }
+  // Defense-in-depth: server-side session validation (middleware is not sufficient)
+  const authError = await requireAdminSession();
+  if (authError) return authError;
 
   try {
     const body = await req.json();

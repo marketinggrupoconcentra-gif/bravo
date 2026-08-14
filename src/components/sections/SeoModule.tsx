@@ -62,10 +62,10 @@ export function SeoModule() {
                 <ReviewCaseIcon size={20} />
               </div>
               <h3 className="m-0 text-[18px] font-extrabold text-[#17131F]">
-                1. Liquidación con Quita Formal
+                1. Liquidación Formal con el Acreedor
               </h3>
               <p className="m-0 text-[14px] text-[#5B5266] leading-[1.6]">
-                Es un convenio directo con el acreedor para liquidar el saldo mediante un pago acordado por escrito. Las condiciones dependen de cada institución y de la situación específica del caso. El convenio se formaliza mediante una <strong className="text-[#17131F]">Carta Finiquito</strong>.
+                Es un convenio directo con el acreedor para liquidar el saldo mediante un pago acordado por escrito. Las condiciones dependen de cada institución y de la situación específica del caso. Si el proceso concluye exitosamente, se emite documentación formal del convenio.
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#5B2C72] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
@@ -83,7 +83,7 @@ export function SeoModule() {
                 2. Ahorro en Cuenta a tu Nombre
               </h3>
               <p className="m-0 text-[14px] text-[#5B5266] leading-[1.6]">
-                No entregas dinero a terceros: aportas mensualmente a un fondo propio y solo se desembolsa una vez formalizado el descuento y verificado el convenio con la entidad bancaria.
+                No entregas dinero a terceros: aportas mensualmente a un fondo propio y el desembolso se realiza una vez verificado el convenio con la entidad bancaria.
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#157A5A] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
@@ -188,14 +188,14 @@ export function SeoModule() {
                     </div>
                   </td>
                   <td className="p-4 font-extrabold text-[#157A5A]">
-                    Descuento negociado según condiciones del caso, sin intereses en marcha
+                    Negociación según condiciones del caso, sin intereses en marcha
                   </td>
                   <td className="p-4 font-bold text-[#5B2C72]">
-                    Asesor 1 a 1 + Negociación activa con acreedores
+                    Asesor 1 a 1 + Negociación con acreedores
                   </td>
                   <td className="p-4 font-extrabold text-[#5B2C72]">
                     <span className="inline-block bg-[#F5EDF9] text-[#5B2C72] text-[12.5px] font-extrabold px-3 py-1 rounded-md border border-[#DDCBE6]">
-                      Liquidación total con carta finiquito
+                      Liquidación formalizada con documentación del convenio
                     </span>
                   </td>
                 </tr>
@@ -218,7 +218,7 @@ export function SeoModule() {
                 <span className="font-extrabold text-[#5B2C72]">Programa Bravo México:</span>
               </div>
               <span className="text-[#17131F] font-semibold">
-                Descuento negociado directamente con el acreedor y carta finiquito formal.
+                Negociación directa con el acreedor; si el proceso concluye exitosamente, se emite la documentación formal del convenio.
               </span>
             </div>
           </div>

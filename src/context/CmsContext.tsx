@@ -93,6 +93,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const handleMessage = (event: MessageEvent) => {
       if (!event.data || typeof event.data !== "object") return;
 
+      // Security: only accept messages from the same origin (admin preview)
+      // event.source must be our own admin window or an embedded iframe from same origin.
+      const allowedOrigin = window.location.origin;
+      if (event.origin !== allowedOrigin) {
+        // Silently ignore cross-origin postMessages
+        return;
+      }
+
       // Real-time live draft update
       if (event.data.type === "BRAVO_CMS_PREVIEW_SYNC") {
         const { sectionId, data } = event.data;
@@ -170,12 +178,32 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             "shadow-[0_0_30px_rgba(94,203,219,0.8)]"
           );
 
-          // Add floating inspector tag pill (lightweight, zero-recalc)
+          // Add floating inspector tag pill — use DOM APIs (no innerHTML with user data)
           const tag = document.createElement("div");
           tag.id = "bravo-inspector-tag";
           tag.className =
             "absolute -top-7 left-2 z-50 bg-[#1E0F26] text-[#5ECBDB] border border-[#5ECBDB] font-mono text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 pointer-events-none transition-transform duration-200 ease-out";
-          tag.innerHTML = `<svg class="w-3 h-3 text-[#5ECBDB] inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg><span>Editando: ${fieldLabel || fieldKey || "Elemento"}</span>`;
+
+          // Safe SVG node (static — no user input interpolated)
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("class", "w-3 h-3 inline-block");
+          svg.setAttribute("fill", "none");
+          svg.setAttribute("viewBox", "0 0 24 24");
+          svg.setAttribute("stroke", "currentColor");
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("stroke-linecap", "round");
+          path.setAttribute("stroke-linejoin", "round");
+          path.setAttribute("stroke-width", "2");
+          path.setAttribute("d", "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z");
+          svg.appendChild(path);
+
+          // Safe text node — no interpolation of user-controlled values via innerHTML
+          const labelSpan = document.createElement("span");
+          const labelText = String(fieldLabel || fieldKey || "Elemento").slice(0, 60);
+          labelSpan.textContent = `Editando: ${labelText}`;
+
+          tag.appendChild(svg);
+          tag.appendChild(labelSpan);
           
           if (getComputedStyle(targetEl).position === "static") {
             (targetEl as HTMLElement).style.position = "relative";

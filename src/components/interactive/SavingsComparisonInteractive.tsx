@@ -1,38 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { CheckIcon } from "@/components/icons/bravo";
-import { logUserAction } from "@/lib/telemetry/logger";
 
 /**
  * Educational financial context component.
  *
- * This component illustrates the COST of minimum payments (based on published
- * bank CAT figures) vs. the conceptual benefit of a structured settlement program.
+ * GOVERNANCE NOTE:
+ * This component does NOT produce specific monetary figures or percentage savings.
+ * No multipliers (2.65x, 2x, etc.) are used — any such figure would require
+ * a validated source and Claims Registry approval.
  *
- * GOVERNANCE NOTE: No specific discount percentages, settlement amounts, or
- * program timelines are hardcoded. Those are claim-governed values that can
- * only be displayed when approved via the Claims Registry.
- *
- * The "traditional" side uses a general illustrative multiplier to show
- * the compounding interest trap — this is educational, not a Bravo claim.
+ * The component illustrates the CONCEPT of the minimum-payment trap conceptually,
+ * without asserting specific costs or outcomes for any individual user.
  */
 export function SavingsComparisonInteractive() {
-  const [debtAmount, setDebtAmount] = useState(150000);
-
-  // Educational illustration: traditional minimum payments trap
-  // Multiplier 2.65x is a representative scenario for high-CAT credit cards,
-  // labeled as illustrative. This is NOT a Bravo claim — it illustrates the problem.
-  const traditionalTotalPay = Math.round(debtAmount * 2.65);
-  const traditionalInterestPaid = traditionalTotalPay - debtAmount;
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    setDebtAmount(val);
-    logUserAction("calculator_interaction", { amount: val, source: "comparison_slider" });
-  };
-
   return (
     <section className="bg-white py-14 lg:py-20 px-4 lg:px-[40px] border-t border-[#E7E3EC] relative overflow-hidden">
       <div className="bravo-container flex flex-col gap-10">
@@ -42,42 +25,17 @@ export function SavingsComparisonInteractive() {
             <span>Contexto Financiero Educativo</span>
           </div>
           <h2 className="text-[28px] sm:text-[38px] font-extrabold tracking-[-0.03em] text-[#17131F] leading-tight m-0">
-            ¿Cuánto cuesta mantener pagos mínimos en tarjetas?
+            ¿Qué pasa cuando sólo pagas el mínimo de tu tarjeta?
           </h2>
           <p className="text-[15px] sm:text-[16.5px] text-[#5B5266] m-0">
-            El costo real del crédito bancario con intereses compuestos frente a un plan de liquidación negociado con descuento.
+            Los pagos mínimos pueden extender el tiempo de liquidación y aumentar significativamente el costo total del crédito.
+            El resultado depende de la tasa, el saldo, la institución, los pagos realizados y las comisiones aplicables.
           </p>
-        </div>
-
-        {/* Interactive Slider Controller */}
-        <div className="max-w-[640px] mx-auto w-full bg-[#FAF8FB] p-6 rounded-[24px] border border-[#E7E3EC] shadow-2xs flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <span className="text-[13.5px] font-bold text-[#5B5266]">Monto total de tu deuda actual:</span>
-            <span className="text-[24px] font-extrabold text-[#5B2C72] font-mono">
-              ${debtAmount.toLocaleString("es-MX")} MXN
-            </span>
-          </div>
-
-          <input
-            type="range"
-            min={50000}
-            max={500000}
-            step={10000}
-            value={debtAmount}
-            onChange={handleSliderChange}
-            className="w-full h-3 bg-[#E7E3EC] rounded-lg appearance-none cursor-pointer accent-[#5B2C72]"
-          />
-
-          <div className="flex justify-between text-[11.5px] font-mono text-[#8A8095]">
-            <span>$50,000 MXN</span>
-            <span>$250,000 MXN</span>
-            <span>$500,000+ MXN</span>
-          </div>
         </div>
 
         {/* Side-by-Side Comparison Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1040px] mx-auto w-full items-stretch">
-          {/* Option A: Pagos Mínimos al Banco (Traditional Trap) */}
+          {/* Option A: Pagos Mínimos al Banco */}
           <div className="p-6 sm:p-8 bg-[#FAF8FB] rounded-[28px] border-2 border-[#E7E3EC] flex flex-col justify-between gap-6">
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center">
@@ -87,7 +45,6 @@ export function SavingsComparisonInteractive() {
                   </svg>
                   <span>Sólo Pagos Mínimos</span>
                 </span>
-                <span className="text-[12px] font-mono text-[#8A8095]">Ejemplo ilustrativo</span>
               </div>
               <h3 className="text-[20px] font-extrabold text-[#17131F] m-0">
                 Pagar el mínimo mensual al banco
@@ -98,32 +55,32 @@ export function SavingsComparisonInteractive() {
             </div>
 
             <div className="p-5 bg-white rounded-2xl border border-[#EAE5EF] flex flex-col gap-3">
-              <div className="flex justify-between items-baseline border-b border-[#F0EDF3] pb-2">
-                <span className="text-[13px] text-[#5B5266]">Total estimado a desembolsar:</span>
-                <span className="text-[22px] font-extrabold text-[#B02A24] font-mono">
-                  ${traditionalTotalPay.toLocaleString("es-MX")} MXN
-                </span>
-              </div>
-              <div className="flex justify-between items-baseline border-b border-[#F0EDF3] pb-2">
-                <span className="text-[13px] text-[#5B5266]">Tiempo estimado (típico):</span>
-                <span className="text-[14px] font-bold text-[#17131F] font-mono">
+              <div className="flex justify-between items-start border-b border-[#F0EDF3] pb-2">
+                <span className="text-[13px] text-[#5B5266] max-w-[60%]">Tiempo estimado de liquidación:</span>
+                <span className="text-[14px] font-bold text-[#17131F] font-mono text-right">
                   Varios años
                 </span>
               </div>
-              <div className="flex justify-between items-baseline">
-                <span className="text-[13px] text-[#5B5266]">Intereses pagados (ilustrativo):</span>
-                <span className="text-[14px] font-bold text-[#B02A24] font-mono">
-                  +${traditionalInterestPaid.toLocaleString("es-MX")} MXN
+              <div className="flex justify-between items-start border-b border-[#F0EDF3] pb-2">
+                <span className="text-[13px] text-[#5B5266] max-w-[60%]">Costo total del crédito:</span>
+                <span className="text-[14px] font-bold text-[#B02A24] font-mono text-right">
+                  Significativamente mayor al saldo original
+                </span>
+              </div>
+              <div className="flex justify-between items-start">
+                <span className="text-[13px] text-[#5B5266] max-w-[60%]">Factores que influyen:</span>
+                <span className="text-[13px] text-[#5B5266] font-mono text-right">
+                  Tasa, saldo, banco, pagos, comisiones
                 </span>
               </div>
             </div>
 
             <div className="text-[12px] text-[#8A8095] italic">
-              *Ejemplo educativo basado en escenario de crédito con altos intereses. El resultado real depende de la tasa, el banco y los pagos realizados.
+              Esta sección es informativa y no representa el resultado específico de ningún caso. El costo real depende de las condiciones particulares de cada crédito.
             </div>
           </div>
 
-          {/* Option B: Plan de Liquidación Bravo (Solution Path) */}
+          {/* Option B: Plan de Liquidación Bravo */}
           <div className="p-6 sm:p-8 bg-gradient-to-b from-[#2E1739] to-[#1E0F26] text-white rounded-[28px] border-2 border-[#5ECBDB] shadow-xl flex flex-col justify-between gap-6 relative overflow-hidden">
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center">
@@ -138,7 +95,7 @@ export function SavingsComparisonInteractive() {
                 Programa de ahorro mensual negociado
               </h3>
               <p className="text-[13.5px] text-[#DDCBE6] m-0">
-                Aportas mensualmente a un fondo propio mientras negociamos directamente con tus acreedores para formalizar un convenio de pago con descuento.
+                Aportas mensualmente a un fondo propio mientras negociamos y acompañamos el proceso con tus acreedores para formalizar un convenio de pago.
               </p>
             </div>
 
@@ -146,21 +103,21 @@ export function SavingsComparisonInteractive() {
               <div className="flex flex-col gap-2 text-[13.5px] text-[#DDCBE6]">
                 <div className="flex items-start gap-2">
                   <CheckIcon size={16} className="text-[#5ECBDB] mt-0.5 shrink-0" />
-                  <span>El descuento negociado depende de la institución, el saldo y las condiciones de tu caso.</span>
+                  <span>Las condiciones de negociación dependen de la institución, el saldo y las características de tu caso.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckIcon size={16} className="text-[#5ECBDB] mt-0.5 shrink-0" />
-                  <span>El plazo se acuerda según tu capacidad de ahorro mensual, sin comprometer tu flujo.</span>
+                  <span>El plan se estructura según tu capacidad de ahorro mensual, sin comprometer tu flujo de efectivo.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckIcon size={16} className="text-[#5ECBDB] mt-0.5 shrink-0" />
-                  <span>Al finalizar, recibes una Carta Finiquito oficial como constancia de liquidación.</span>
+                  <span>Cuando la liquidación se formaliza con el acreedor, recibes la documentación correspondiente al convenio.</span>
                 </div>
               </div>
 
               <div className="pt-2 border-t border-white/10 text-center">
                 <span className="text-[12px] text-[#AB6CCA] font-mono">
-                  Para conocer tu descuento y plazo real, solicita tu evaluación personalizada.
+                  Para conocer las condiciones aplicables a tu caso, solicita tu evaluación personalizada.
                 </span>
               </div>
             </div>

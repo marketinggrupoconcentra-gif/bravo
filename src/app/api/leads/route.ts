@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
 import crypto from "crypto";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,11 @@ function formatMetaPhone(phone: string): string {
 }
 
 // GET: Fetch all leads from Neon Postgres with api_sync_logs
+// PRIVATE: requires valid admin session
 export async function GET(req: NextRequest) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     await initDbSchema();
 

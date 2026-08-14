@@ -141,7 +141,7 @@ export function AdvisorSection() {
                 src="/images/brand/human/bravo-advisor-human.webp"
                 alt="Asesora de Bravo conversando con clientes para resolver su situación financiera"
                 fill
-                priority
+                loading="lazy"
                 sizes="(max-width: 1024px) 100vw, 580px"
                 className="object-cover group-hover:scale-[1.02] transition-transform duration-700"
                 style={{ objectPosition: "50% 35%" }}
@@ -217,9 +217,9 @@ export function AdvisorSection() {
                 <div className="w-[36px] h-[36px] rounded-[10px] bg-[#E9F8FA] border border-[#BEE7ED] flex items-center justify-center shrink-0 text-[#1E8A9B]">
                   <NegotiationIcon size={18} />
                 </div>
-                <div className="text-[15px] font-bold text-[#17131F]">Defensa activa</div>
+                <div className="text-[15px] font-bold text-[#17131F]">Negociación y acompañamiento</div>
                 <span className="text-[13px] text-[#5B5266] leading-snug">
-                  Negociación directa buscando el mayor descuento.
+                  Negociación directa con la institución financiera para explorar las condiciones del convenio.
                 </span>
               </div>
             </div>

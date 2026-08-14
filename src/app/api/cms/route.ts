@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
+import { requireAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,11 @@ export async function GET(req: NextRequest) {
 }
 
 // POST: Save/Upsert CMS section content in Neon Postgres
+// PRIVATE: requires valid admin session
 export async function POST(req: NextRequest) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   try {
     await initDbSchema();
 
@@ -105,18 +110,38 @@ export async function POST(req: NextRequest) {
     
     const regulatedPatterns = ["%", "cat", "garantizado", "protegido", "buró", "buro", "quita", "años", "meses", "clientes", "deudas liquidadas", "reviews", "rating"];
     
-    // Check for regulated patterns in raw text
     for (const pattern of regulatedPatterns) {
-      // Create a regex to match the pattern as a whole word (or standalone symbol for %)
       const regex = pattern === "%" ? /%/ : new RegExp(`\\b${pattern}\\b`, "i");
       if (regex.test(textWithoutClaims)) {
         return NextResponse.json(
-          { success: false, error: `Governance Block: Regulated pattern "${pattern}" detected in raw text. You must use the Claims Registry (e.g., {{claim:id}}) for regulated promises.` },
+          { success: false, error: `Governance Block: Regulated pattern "${pattern}" detected in raw text. Use Claims Registry ({{claim:id}}) for regulated promises.` },
           { status: 403 }
         );
       }
     }
     // ------------------------------------
+
+    // --- CTA URL VALIDATION ---
+    // Block dangerous protocols. Allow internal paths (/) and explicit https:// URLs.
+    const BLOCKED_PROTOCOLS = /^(javascript:|data:|vbscript:|file:|blob:|\/\/[^/])/i;
+    const ctaUrls = [primaryCtaUrl, secondaryCtaUrl].filter(Boolean) as string[];
+    for (const url of ctaUrls) {
+      const trimmed = url.trim();
+      if (BLOCKED_PROTOCOLS.test(trimmed)) {
+        return NextResponse.json(
+          { success: false, error: `Security Block: CTA URL contains a disallowed protocol: "${trimmed.substring(0, 40)}"` },
+          { status: 400 }
+        );
+      }
+      // Must start with / (internal) or https:// (explicit secure)
+      if (!trimmed.startsWith("/") && !trimmed.startsWith("https://")) {
+        return NextResponse.json(
+          { success: false, error: `Security Block: CTA URL must be an internal path (/) or an explicit https:// URL.` },
+          { status: 400 }
+        );
+      }
+    }
+    // --------------------------
 
     const upserted = await sql`
       INSERT INTO cms_content (

@@ -93,49 +93,27 @@ export function FormStudio() {
     updateConfigField("webhookHeaders", headers);
   };
 
-  // Live test webhook
+  // Live test webhook — uses integrationId, never a raw URL
+  // The server maps integrationId to a known, allowlisted endpoint.
   const handleTestWebhook = async () => {
-    if (!config.webhookUrl) return;
     setTestingWebhook(true);
     setWebhookTestResult(null);
-
-    const headersObj: Record<string, string> = {};
-    if (Array.isArray(config.webhookHeaders)) {
-      config.webhookHeaders.forEach((h) => {
-        if (h.key && h.value) headersObj[h.key] = h.value;
-      });
-    }
 
     try {
       const res = await fetch("/api/webhook-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          endpointUrl: config.webhookUrl,
-          method: config.webhookMethod || "POST",
-          headers: headersObj,
-          payload: {
-            lead_id: `test-lead-${Date.now()}`,
-            folio: "BR-999999",
-            nombre: "Juan Pérez (Lead Test)",
-            celular: "5512345678",
-            email: "contacto.test@bravo.mx",
-            institucion: "BBVA México",
-            monto: "$100,000 – $250,000",
-            tipo_deuda: "Tarjeta de crédito",
-            submitted_at: new Date().toISOString(),
-            device: "Escritorio",
-            referrer: "Form Studio Webhook Tester",
-          },
+          integrationId: "intelix", // primary lead destination
         }),
       });
 
       const data = await res.json();
       setWebhookTestResult(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setWebhookTestResult({
         success: false,
-        error: err?.message || "Error al conectar con endpoint externo",
+        error: err instanceof Error ? err.message : "Error al conectar con integración",
       });
     } finally {
       setTestingWebhook(false);
@@ -764,13 +742,14 @@ export function FormStudio() {
                 </p>
               </div>
             ) : (
-              /* HTML Embed Preview */
+              /* HTML Embed — code is shown as text only, NOT executed */
               <div className="flex flex-col gap-2">
-                <span className="text-[11px] font-mono text-[#8A8095] uppercase">Renderizado de Código HTML:</span>
-                <div
-                  className="w-full overflow-auto p-4 bg-[#FAF8FB] rounded-xl border border-[#E7E3EC]"
-                  dangerouslySetInnerHTML={{ __html: config.htmlEmbedCode || "" }}
-                />
+                <span className="text-[11px] font-mono text-[#8A8095] uppercase">Vista Previa del Código (solo lectura — no se ejecuta en este panel):</span>
+                <div className="w-full overflow-auto p-4 bg-[#FAF8FB] rounded-xl border border-[#E7E3EC]">
+                  <pre className="text-[11.5px] font-mono text-[#5B5266] whitespace-pre-wrap break-all m-0 select-all">
+                    {config.htmlEmbedCode || "— Sin código configurado —"}
+                  </pre>
+                </div>
               </div>
             )}
           </div>

@@ -27,15 +27,15 @@ export type { ResolvedClaim, ResolvedClaimsMap } from "@/lib/claims/types";
 export async function resolveClaimFromDB(id: string): Promise<ResolvedClaim> {
   try {
     await initDbSchema();
-    const result = await sql`
+    const result = await sql<{ value: string }[]>`
       SELECT value FROM claims_registry 
       WHERE id = ${id} 
         AND status = 'VALIDATED' 
         AND legal_approved = true
       LIMIT 1
     `;
-    if ((result as any[]).length > 0) {
-      return (result as any[])[0].value as string;
+    if (result.length > 0) {
+      return result[0].value;
     }
     return null;
   } catch (err) {
@@ -59,13 +59,13 @@ export async function resolveClaimsMapFromDB(
 
   try {
     await initDbSchema();
-    const result = await sql`
+    const result = await sql<{ id: string; value: string }[]>`
       SELECT id, value FROM claims_registry
       WHERE id = ANY(${ids}::text[])
         AND status = 'VALIDATED'
         AND legal_approved = true
     `;
-    for (const row of result as any[]) {
+    for (const row of result) {
       map[row.id] = row.value;
     }
   } catch (err) {
