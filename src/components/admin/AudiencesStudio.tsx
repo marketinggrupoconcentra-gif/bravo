@@ -127,13 +127,13 @@ export function AudiencesStudio({ submissions, onRefresh }: AudiencesStudioProps
 
   // 3. Export Google Ads Offline Conversions CSV
   const handleDownloadGoogleOfflineCsv = () => {
-    const headers = "Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency\n";
+    const headers = "Google Click ID,Conversion Name,Conversion Time\n";
     const rows = filteredAudienceLeads
+      .filter((lead) => lead.attribution?.gclid || lead.attribution?.gbraid || lead.attribution?.wbraid)
       .map((lead) => {
-        const gclid = lead.attribution?.gclid || "";
+        const gclid = lead.attribution?.gclid || lead.attribution?.gbraid || lead.attribution?.wbraid || "";
         const dateStr = new Date(lead.submittedAt || Date.now()).toISOString().replace("T", " ").substring(0, 19) + "+00:00";
-        const val = lead.monto ? parseInt(lead.monto.replace(/\D/g, ""), 10) || 0 : 0;
-        return `"${gclid}","${googleConversionAction}","${dateStr}","${val}","MXN"`;
+        return `"${gclid}","${googleConversionAction}","${dateStr}"`;
       })
       .join("\n");
 

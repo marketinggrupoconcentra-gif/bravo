@@ -21,7 +21,7 @@ export async function initDbSchema() {
     await sql`
       CREATE TABLE IF NOT EXISTS leads (
         id SERIAL PRIMARY KEY,
-        folio VARCHAR(32) UNIQUE NOT NULL,
+        folio VARCHAR(64) UNIQUE NOT NULL,
         nombre VARCHAR(128) NOT NULL,
         institucion VARCHAR(128) NOT NULL,
         tipo_deuda VARCHAR(128) NOT NULL,
@@ -40,6 +40,7 @@ export async function initDbSchema() {
 
     // Ensure columns exist on already created tables
     try {
+      await sql`ALTER TABLE leads ALTER COLUMN folio TYPE VARCHAR(64);`;
       await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS attribution JSONB DEFAULT '{}'::jsonb;`;
       await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT '';`;
       await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS api_sync_logs JSONB DEFAULT '{}'::jsonb;`;

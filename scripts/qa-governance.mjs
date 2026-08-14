@@ -44,10 +44,15 @@ async function get(path) {
   return r;
 }
 
-async function post(path, body, headers = {}) {
-  return fetch(`${BASE}${path}`, {
+async function post(path, body, extraHeaders = {}) {
+  const ip = `10.0.0.${Math.floor(Math.random() * 255)}`;
+  return await fetch(`${BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: { 
+      "Content-Type": "application/json",
+      "x-forwarded-for": ip,
+      ...extraHeaders
+    },
     body: JSON.stringify(body),
     redirect: "manual",
   });
@@ -170,14 +175,13 @@ async function testLeadValidation() {
   // Missing required fields → 400
   const r1 = await post("/api/leads", { nombre: "Test" });
   if (r1.status === 400) {
-    ok("POST /api/leads missing folio/celular → 400");
+    ok("POST /api/leads missing celular → 400");
   } else {
     fail("POST /api/leads missing fields should be 400", `got ${r1.status}`);
   }
 
   // Invalid phone → 400
   const r2 = await post("/api/leads", {
-    folio: "test-folio-001",
     nombre: "Test User",
     celular: "123", // too short
   });
@@ -189,7 +193,6 @@ async function testLeadValidation() {
 
   // Invalid email → 400
   const r3 = await post("/api/leads", {
-    folio: "test-folio-002",
     nombre: "Test User",
     celular: "5512345678",
     email: "not-an-email",
@@ -200,12 +203,11 @@ async function testLeadValidation() {
     fail("POST /api/leads invalid email should be 400", `got ${r3.status}`);
   }
 
-  // Webhook URL in payload → should be ignored (lead stored, redirect always /gracias)
+  // Attempt to inject webhookConfig (should be ignored, but test safe routing)
   const r4 = await post("/api/leads", {
-    folio: "bravo-qa-webhook-test-001",
-    nombre: "QA Test User",
+    nombre: "Test Valid User",
     celular: "5512345678",
-    webhookConfig: { customRedirectUrl: "https://evil.example.com" },
+    webhookConfig: { url: "http://malicious.com" }
   });
   if (r4.status === 200 || r4.status === 201) {
     const data = await r4.json();

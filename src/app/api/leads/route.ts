@@ -135,7 +135,6 @@ export async function POST(req: NextRequest) {
 
     // ── Explicit field whitelist — no arbitrary browser fields accepted ────
     const {
-      folio,
       nombre,
       institucion,
       tipoDeuda,
@@ -147,7 +146,6 @@ export async function POST(req: NextRequest) {
       attribution,
       // webhookConfig intentionally excluded (SSRF / open redirect risk)
     } = body as {
-      folio?: string;
       nombre?: string;
       institucion?: string;
       tipoDeuda?: string;
@@ -160,16 +158,15 @@ export async function POST(req: NextRequest) {
     };
 
     // ── Required field presence ────────────────────────────────────────────
-    if (!folio || !nombre || !celular) {
+    if (!nombre || !celular) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields: folio, nombre, celular" },
+        { success: false, error: "Missing required fields: nombre, celular" },
         { status: 400 }
       );
     }
 
     // ── Type enforcement ───────────────────────────────────────────────────
     if (
-      typeof folio !== "string" ||
       typeof nombre !== "string" ||
       typeof celular !== "string"
     ) {
@@ -180,12 +177,15 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Field length limits ────────────────────────────────────────────────
-    if (nombre.length > 120 || folio.length > 80) {
+    if (nombre.length > 120) {
       return NextResponse.json(
         { success: false, error: "Field length exceeded" },
         { status: 400 }
       );
     }
+
+    // ── Generate authoritative folio (server-side) ─────────────────────────
+    const serverFolio = `BR-${crypto.randomUUID().toUpperCase()}`;
 
     // ── Phone normalization and format check ───────────────────────────────
     const celularDigits = celular.replace(/\D/g, "");
@@ -206,13 +206,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Folio format check (alphanumeric + hyphens) ────────────────────────
-    if (!/^[a-zA-Z0-9\-_]{4,80}$/.test(folio)) {
-      return NextResponse.json(
-        { success: false, error: "Formato de folio inválido" },
-        { status: 400 }
-      );
-    }
+    // ── Phone normalization and format check ───────────────────────────────
 
     // ── Nombre normalization ────────────────────────────────────────────────
     const nombreNormalized = nombre.trim().slice(0, 120);
@@ -283,7 +277,7 @@ export async function POST(req: NextRequest) {
     if (intelixApiKey) {
       try {
         const payload = {
-          external_id: folio,
+          external_id: serverFolio,
           nombre_completo: nombre,
           telefono: celular,
           correo: email || "",
@@ -379,7 +373,7 @@ export async function POST(req: NextRequest) {
         api_sync_logs
       )
       VALUES (
-        ${folio},
+        ${serverFolio},
         ${nombreNormalized},
         ${typeof institucion === "string" ? institucion.slice(0, 200) : "Institución bancaria"},
         ${typeof tipoDeuda === "string" ? tipoDeuda.slice(0, 100) : "Tarjeta de crédito"},
@@ -391,13 +385,6 @@ export async function POST(req: NextRequest) {
         ${attributionJson}::jsonb,
         ${apiSyncLogsJson}::jsonb
       )
-      ON CONFLICT (folio) DO UPDATE SET
-        nombre = EXCLUDED.nombre,
-        institucion = EXCLUDED.institucion,
-        monto = EXCLUDED.monto,
-        celular = EXCLUDED.celular,
-        attribution = EXCLUDED.attribution,
-        api_sync_logs = EXCLUDED.api_sync_logs
       RETURNING 
         id::text,
         folio,

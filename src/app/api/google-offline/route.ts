@@ -22,25 +22,15 @@ export async function POST(req: NextRequest) {
 
     // Build Google Ads Offline Conversion Rows
     const conversionRows = leads
-      .filter((l: any) => l.attribution?.gclid || l.attribution?.gbraid || l.attribution?.wbraid || l.attribution?.utm_source?.toLowerCase().includes("google"))
+      .filter((l: any) => l.attribution?.gclid || l.attribution?.gbraid || l.attribution?.wbraid)
       .map((lead: any) => {
         const dateObj = new Date(lead.submittedAt || Date.now());
         const formattedTime = dateObj.toISOString().replace("T", " ").substring(0, 19) + "+00:00";
-        
-        let estimatedAmount = 0;
-        if (lead.monto) {
-          const parsed = parseInt(lead.monto.replace(/\\D/g, ""), 10);
-          if (!isNaN(parsed)) {
-            estimatedAmount = parsed;
-          }
-        }
 
         return {
           google_click_id: lead.attribution?.gclid || "",
           conversion_name: conversionAction || "Bravo_Lead_Calificado",
           conversion_date_time: formattedTime,
-          conversion_value: estimatedAmount,
-          conversion_currency_code: "MXN",
           user_identifiers: [
             { hashed_email: lead.email ? sha256(lead.email) : undefined },
             { hashed_phone: lead.celular ? sha256(`52${lead.celular.replace(/\\D/g, "")}`) : undefined },

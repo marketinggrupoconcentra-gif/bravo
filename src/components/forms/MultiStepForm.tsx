@@ -171,7 +171,6 @@ export function MultiStepForm() {
     const instName = getInstitutionDisplay(formData.institucion, formData.otraInstitucionNombre);
     const debtName = getDebtTypeDisplay(formData.tipoDeuda);
     const amtName = getAmountDisplay(formData.amount);
-    const folioCode = `BR-${crypto.randomUUID().split("-")[0].toUpperCase()}-${crypto.randomUUID().split("-")[1].toUpperCase()}`;
     const deviceType =
       typeof navigator !== "undefined" && navigator.userAgent.includes("Mobile")
         ? "M\u00f3vil"
@@ -179,7 +178,7 @@ export function MultiStepForm() {
     const referrerVal =
       typeof document !== "undefined" ? document.referrer || "Directo" : "Directo";
 
-    const leadSummary = {
+    const leadSummary: any = {
       nombre: leadName,
       amount: amtName,
       tipoDeuda: debtName,
@@ -187,7 +186,7 @@ export function MultiStepForm() {
       celular: formData.celular || "",
       last4,
       email: formData.email || "",
-      folio: folioCode,
+      folio: "", // Will be populated by server
       submittedAt: new Date().toISOString(),
     };
 
@@ -214,7 +213,6 @@ export function MultiStepForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          folio: folioCode,
           nombre: leadName,
           institucion: instName,
           tipoDeuda: debtName,
