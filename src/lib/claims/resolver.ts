@@ -11,11 +11,14 @@
  * If either condition is not met, the resolver returns null.
  * Callers must handle null by hiding the claim or using neutral copy — never
  * substituting a hardcoded numeric fallback.
+ *
+ * DB status values are UPPERCASE: VALIDATED | PENDING_VALIDATION | REJECTED
  */
 
 import { sql, initDbSchema } from "@/lib/db/neon";
+import type { ResolvedClaim, ResolvedClaimsMap } from "@/lib/claims/types";
 
-export type ResolvedClaim = string | null;
+export type { ResolvedClaim, ResolvedClaimsMap } from "@/lib/claims/types";
 
 /**
  * Resolve a single claim from the database.
@@ -48,8 +51,8 @@ export async function resolveClaimFromDB(id: string): Promise<ResolvedClaim> {
  */
 export async function resolveClaimsMapFromDB(
   ids: string[]
-): Promise<Record<string, ResolvedClaim>> {
-  const map: Record<string, ResolvedClaim> = {};
+): Promise<ResolvedClaimsMap> {
+  const map: ResolvedClaimsMap = {};
   ids.forEach((id) => (map[id] = null));
 
   if (ids.length === 0) return map;

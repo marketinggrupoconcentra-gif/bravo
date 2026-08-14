@@ -57,12 +57,31 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST: Insert a new lead and execute AUTONOMOUS platform dispatches
+// POST: Insert a new lead and execute platform dispatches
 export async function POST(req: NextRequest) {
   try {
+    // ── Payload size guard (max 32KB) ─────────────────────────────────────
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 32_768) {
+      return NextResponse.json(
+        { success: false, error: "Payload too large" },
+        { status: 413 }
+      );
+    }
+
     await initDbSchema();
 
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON body" },
+        { status: 400 }
+      );
+    }
+
+    // ── Explicit field whitelist — no arbitrary browser fields accepted ────
     const {
       folio,
       nombre,
@@ -74,69 +93,129 @@ export async function POST(req: NextRequest) {
       device,
       referrer,
       attribution,
-      // webhookConfig is intentionally NOT accepted from the browser.
-      // The server decides all integration destinations. Open redirect risk.
-    } = body;
+      // webhookConfig intentionally excluded (SSRF / open redirect risk)
+    } = body as {
+      folio?: string;
+      nombre?: string;
+      institucion?: string;
+      tipoDeuda?: string;
+      monto?: string;
+      celular?: string;
+      email?: string;
+      device?: string;
+      referrer?: string;
+      attribution?: Record<string, unknown>;
+    };
 
+    // ── Required field presence ────────────────────────────────────────────
     if (!folio || !nombre || !celular) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields (folio, nombre, celular)" },
+        { success: false, error: "Missing required fields: folio, nombre, celular" },
         { status: 400 }
       );
     }
 
-    const clientIp =
-      req.headers.get("x-forwarded-for")?.split(",")[0] ||
-      req.headers.get("x-real-ip") ||
-      "127.0.0.1";
-    const clientUserAgent =
-      attribution?.last_touch?.user_agent ||
-      attribution?.first_touch?.user_agent ||
-      req.headers.get("user-agent") ||
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
+    // ── Type enforcement ───────────────────────────────────────────────────
+    if (
+      typeof folio !== "string" ||
+      typeof nombre !== "string" ||
+      typeof celular !== "string"
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Invalid field types" },
+        { status: 400 }
+      );
+    }
+
+    // ── Field length limits ────────────────────────────────────────────────
+    if (nombre.length > 120 || folio.length > 80) {
+      return NextResponse.json(
+        { success: false, error: "Field length exceeded" },
+        { status: 400 }
+      );
+    }
+
+    // ── Phone normalization and format check ───────────────────────────────
+    const celularDigits = celular.replace(/\D/g, "");
+    if (celularDigits.length < 10 || celularDigits.length > 13) {
+      return NextResponse.json(
+        { success: false, error: "Número de celular inválido (se esperan 10 dígitos)" },
+        { status: 400 }
+      );
+    }
+    const celularNormalized = celularDigits;
+
+    // ── Email format check (if provided) ──────────────────────────────────
+    const emailNormalized = typeof email === "string" ? email.trim().toLowerCase() : "";
+    if (emailNormalized && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalized)) {
+      return NextResponse.json(
+        { success: false, error: "Formato de correo inválido" },
+        { status: 400 }
+      );
+    }
+
+    // ── Folio format check (alphanumeric + hyphens) ────────────────────────
+    if (!/^[a-zA-Z0-9\-_]{4,80}$/.test(folio)) {
+      return NextResponse.json(
+        { success: false, error: "Formato de folio inválido" },
+        { status: 400 }
+      );
+    }
+
+    // ── Nombre normalization ────────────────────────────────────────────────
+    const nombreNormalized = nombre.trim().slice(0, 120);
 
     const nowIso = new Date().toISOString();
-    const estimatedValue = monto?.includes("1,000,000")
-      ? 350000
-      : monto?.includes("250,000")
-      ? 175000
-      : 75000;
 
     // =========================================================================
-    // 1. Autonomous Meta Conversions API (CAPI) Dispatch
+    // 1. Meta Conversions API (CAPI)
     // =========================================================================
-    let metaCapiLog: Record<string, unknown> = {
-      status: "success",
-      sentAt: nowIso,
-      responseCode: 200,
-      responseMessage: "Evento Lead recibido con éxito por Meta Graph API v19.0 (1 evento procesado).",
-      details: {
-        event_name: "Lead",
-        fbc: attribution?.fbc || (attribution?.fbclid ? `fb.1.${Date.now()}.${attribution.fbclid}` : "fb.1.auto"),
-        fbp: attribution?.fbp || "fb.1.browser",
-        user_data_hashed: ["em", "ph", "fn", "ln"],
-        fbtrace_id: `trace_${Math.random().toString(36).substring(2, 11)}`,
-      },
-    };
+    // STATUS: NOT_CONFIGURED
+    // Real CAPI implementation requires Meta Pixel ID + CAPI Token server-side.
+    // Until those are configured and the real fetch is implemented, we report
+    // NOT_CONFIGURED — we never mark success without a real provider response.
+    //
+    // To implement: add META_PIXEL_ID + META_CAPI_TOKEN to env and make
+    // a real POST to https://graph.facebook.com/v19.0/{pixelId}/events
+    const hasMetaConfig = Boolean(
+      process.env.META_PIXEL_ID && process.env.META_CAPI_TOKEN
+    );
+    const metaCapiLog: Record<string, unknown> = hasMetaConfig
+      ? {
+          status: "PENDING",
+          sentAt: nowIso,
+          responseMessage: "Meta CAPI credentials detected but real implementation not yet wired.",
+        }
+      : {
+          status: "NOT_CONFIGURED",
+          sentAt: nowIso,
+          responseMessage: "META_PIXEL_ID and META_CAPI_TOKEN are not configured. Set them in environment variables to enable Meta CAPI.",
+        };
 
     // =========================================================================
-    // 2. Autonomous Google Ads Enhanced Conversions Dispatch
+    // 2. Google Ads Enhanced Conversions
     // =========================================================================
-    const hasGoogleGclid = Boolean(attribution?.gclid || attribution?.gbraid || attribution?.wbraid || attribution?.utm_source?.toLowerCase().includes("google"));
-    let googleAdsLog: Record<string, unknown> = {
-      status: "success",
-      sentAt: nowIso,
-      responseCode: 200,
-      responseMessage: hasGoogleGclid
-        ? `Conversión Enhanced mapeada y vinculada a GCLID (${attribution?.gclid || "gclid_detected"}).`
-        : "Conversión de tráfico directo/orgánico vinculada a Google Enhanced Conversions.",
-      details: {
-        conversion_action: "Bravo_Lead_Calificado",
-        conversion_currency: "MXN",
-        conversion_value: estimatedValue,
-        gclid: attribution?.gclid || "N/A",
-      },
-    };
+    // STATUS: NOT_CONFIGURED
+    // Real Google Ads Enhanced Conversions requires Conversion ID + label.
+    // Until those are configured and the real fetch is implemented, NOT_CONFIGURED.
+    //
+    // To implement: add GOOGLE_ADS_CONVERSION_ID + GOOGLE_ADS_LABEL to env
+    // and send via Google Ads Measurement Protocol or gtag server-side.
+    const hasGoogleConfig = Boolean(
+      process.env.GOOGLE_ADS_CONVERSION_ID && process.env.GOOGLE_ADS_LABEL
+    );
+    const googleAdsLog: Record<string, unknown> = hasGoogleConfig
+      ? {
+          status: "PENDING",
+          sentAt: nowIso,
+          responseMessage: "Google Ads credentials detected but real implementation not yet wired.",
+        }
+      : {
+          status: "NOT_CONFIGURED",
+          sentAt: nowIso,
+          responseMessage: "GOOGLE_ADS_CONVERSION_ID and GOOGLE_ADS_LABEL are not configured. Set them in environment variables to enable Google Enhanced Conversions.",
+        };
+
 
     // =========================================================================
     // 3. Autonomous Intelix CRM Dispatch
@@ -249,14 +328,14 @@ export async function POST(req: NextRequest) {
       )
       VALUES (
         ${folio},
-        ${nombre},
-        ${institucion || "Institución bancaria"},
-        ${tipoDeuda || "Tarjeta de crédito"},
-        ${monto || "Más de $50,000 MXN"},
-        ${celular},
-        ${email || ""},
-        ${device || "Escritorio"},
-        ${referrer || "Directo"},
+        ${nombreNormalized},
+        ${typeof institucion === "string" ? institucion.slice(0, 200) : "Institución bancaria"},
+        ${typeof tipoDeuda === "string" ? tipoDeuda.slice(0, 100) : "Tarjeta de crédito"},
+        ${typeof monto === "string" ? monto.slice(0, 100) : "Más de $50,000 MXN"},
+        ${celularNormalized},
+        ${emailNormalized},
+        ${typeof device === "string" ? device.slice(0, 100) : "Escritorio"},
+        ${typeof referrer === "string" ? referrer.slice(0, 500) : "Directo"},
         ${attributionJson}::jsonb,
         ${apiSyncLogsJson}::jsonb
       )

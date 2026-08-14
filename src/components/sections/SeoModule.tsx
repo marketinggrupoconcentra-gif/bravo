@@ -45,11 +45,8 @@ export function SeoModule() {
           </div>
 
           <div className="flex flex-col gap-1 text-[13.5px] text-[#8A8095] lg:text-right shrink-0">
-            <span className="text-[#157A5A] font-bold flex items-center lg:justify-end gap-1">
-              <svg className="w-3.5 h-3.5 text-[#157A5A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Conforme a la legislación mercantil mexicana</span>
+            <span className="text-[#5B5266] font-medium text-[13px]">
+              Guía de referencia educativa · 2026
             </span>
           </div>
         </div>
@@ -68,11 +65,11 @@ export function SeoModule() {
                 1. Liquidación con Quita Formal
               </h3>
               <p className="m-0 text-[14px] text-[#5B5266] leading-[1.6]">
-                Es un convenio directo donde el acreedor condona hasta el 60% del saldo a cambio de un pago pactado por escrito mediante una <strong className="text-[#17131F]">Carta Finiquito oficial</strong>.
+                Es un convenio directo con el acreedor para liquidar el saldo mediante un pago acordado por escrito. Las condiciones dependen de cada institución y de la situación específica del caso. El convenio se formaliza mediante una <strong className="text-[#17131F]">Carta Finiquito</strong>.
               </p>
             </div>
             <div className="text-[12px] font-mono font-bold text-[#5B2C72] uppercase tracking-wider pt-2 border-t border-[#EAE5EF]/60">
-              SOLUCIÓN REGULADA EN MÉXICO
+              NEGOCIACIÓN DIRECTA CON EL ACREEDOR
             </div>
           </div>
 
@@ -149,12 +146,12 @@ export function SeoModule() {
                     </div>
                   </td>
                   <td className="p-4 text-[#5B5266]">
-                    <span className="font-semibold text-[#8C201B]">Intereses muy altos</span> (CAT &gt; 70% anual)
+                    <span className="font-semibold text-[#8C201B]">Intereses elevados</span> · el saldo puede crecer con el tiempo dependiendo de la tasa y pagos realizados
                   </td>
-                  <td className="p-4 text-[#5B5266]">Nulo (contacto constante de cobranza)</td>
+                  <td className="p-4 text-[#5B5266]">Sin acompañamiento; cobros frecuentes de la institución</td>
                   <td className="p-4 text-[#5B5266]">
                     <span className="inline-block bg-[#F4F2F6] text-[#5B5266] text-[12px] font-bold px-2.5 py-1 rounded-md">
-                      Deuda interminable
+                      Plazo extendido de pago
                     </span>
                   </td>
                 </tr>
@@ -210,7 +207,7 @@ export function SeoModule() {
           <div className="md:hidden flex flex-col gap-3 text-[14px]">
             <div className="bg-white p-4 rounded-[16px] border border-[#E7E3EC] flex flex-col gap-2">
               <span className="font-bold text-[#17131F]">Pagar el mínimo mensual:</span>
-              <span className="text-[#8C201B] font-semibold">Intereses altos (CAT &gt; 70%). Deuda interminable.</span>
+              <span className="text-[#8C201B] font-semibold">Intereses elevados que pueden extender el plazo de pago según las condiciones del crédito.</span>
             </div>
             <div className="bg-white p-4 rounded-[16px] border border-[#E7E3EC] flex flex-col gap-2">
               <span className="font-bold text-[#17131F]">Consolidar con nuevo crédito:</span>
@@ -230,10 +227,10 @@ export function SeoModule() {
           <div className="bg-gradient-to-r from-[#5B2C72] to-[#3B1F4A] text-white rounded-[20px] p-[24px] sm:p-[32px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[20px] shadow-lg">
             <div className="flex flex-col gap-1">
               <span className="text-[18px] sm:text-[20px] font-extrabold text-white">
-                ¿Quieres saber qué descuento y plazo aplican a tu caso?
+                ¿Quieres conocer qué opciones pueden aplicar en tu caso?
               </span>
               <span className="text-[14px] text-[#DDCBE6]">
-                Evaluación inicial gratuita y confidencial, sin impacto en historial crediticio.
+                Evaluación inicial gratuita y confidencial. Esta evaluación no consulta tu Buró de Crédito.
               </span>
             </div>
             <Link

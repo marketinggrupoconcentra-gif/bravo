@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { sql, initDbSchema } from "@/lib/db/neon";
 import { requireAdminSession, getAdminIdentityLabel } from "@/lib/auth/admin";
 import { claimsRegistry as defaultClaims } from "@/config/claims";
+import { isValidClaimStatus } from "@/lib/claims/types";
+import type { ClaimStatus } from "@/lib/claims/types";
 
 export async function GET() {
   const authError = await requireAdminSession();
@@ -9,19 +11,20 @@ export async function GET() {
 
   try {
     await initDbSchema();
-    
-    // Auto-seed from default claims if empty
+
+    // Auto-seed from default claims if empty (first-time setup)
     const countRes = await sql`SELECT COUNT(*) as count FROM claims_registry`;
     const count = (countRes as any[])[0].count;
     if (count === "0" || count === 0) {
       for (const [id, claim] of Object.entries(defaultClaims)) {
+        // Seed with UPPERCASE status — config is now normalized
         await sql`
           INSERT INTO claims_registry (id, label, value, status, source, source_date, legal_approved)
           VALUES (
             ${id}, 
             ${id}, 
             ${claim.value}, 
-            ${claim.status === "validated" ? "VALIDATED" : "PENDING_VALIDATION"}, 
+            ${claim.status},
             ${claim.source}, 
             ${claim.sourceDate || null}, 
             ${claim.legalApproved}
@@ -43,9 +46,31 @@ export async function POST(req: Request) {
   if (authError) return authError;
 
   try {
-    const { id, value, status, source, legal_approved } = await req.json();
-    if (!id) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    const body = await req.json();
+    const { id, value, status, source, legal_approved } = body;
+
+    // ── Input validation ──────────────────────────────────────────────────
+    if (!id || typeof id !== "string" || id.length > 80) {
+      return NextResponse.json({ error: "Invalid or missing 'id'" }, { status: 400 });
+    }
+    if (!value || typeof value !== "string" || value.length > 500) {
+      return NextResponse.json({ error: "Invalid or missing 'value'" }, { status: 400 });
+    }
+    if (!status || !isValidClaimStatus(status)) {
+      return NextResponse.json(
+        { error: `Invalid 'status'. Must be one of: VALIDATED, PENDING_VALIDATION, REJECTED` },
+        { status: 400 }
+      );
+    }
+    const claimStatus: ClaimStatus = status;
+    const isApproved = legal_approved === true || legal_approved === "true" || legal_approved === 1;
+
+    // ── Prevent approving a non-VALIDATED claim ───────────────────────────
+    if (isApproved && claimStatus !== "VALIDATED") {
+      return NextResponse.json(
+        { error: "legal_approved can only be true when status is VALIDATED" },
+        { status: 400 }
+      );
     }
 
     await initDbSchema();
@@ -53,14 +78,14 @@ export async function POST(req: Request) {
     const previous = await sql`SELECT * FROM claims_registry WHERE id = ${id}`;
     const previousValue = (previous as any[]).length > 0 ? (previous as any[])[0] : null;
 
-    const isApproved = legal_approved === true || legal_approved === "true" || legal_approved === 1;
+    const sourceText = typeof source === "string" ? source.slice(0, 500) : null;
 
     if (previousValue) {
       await sql`
         UPDATE claims_registry
         SET value = ${value},
-            status = ${status},
-            source = ${source},
+            status = ${claimStatus},
+            source = ${sourceText},
             legal_approved = ${isApproved},
             updated_at = NOW()
         WHERE id = ${id}
@@ -68,12 +93,12 @@ export async function POST(req: Request) {
     } else {
       await sql`
         INSERT INTO claims_registry (id, label, value, status, source, legal_approved)
-        VALUES (${id}, ${id}, ${value}, ${status}, ${source}, ${isApproved})
+        VALUES (${id}, ${id}, ${value}, ${claimStatus}, ${sourceText}, ${isApproved})
       `;
     }
 
     // Write audit log
-    const newValue = { id, value, status, source, legal_approved: isApproved };
+    const newValue = { id, value, status: claimStatus, source: sourceText, legal_approved: isApproved };
     await sql`
       INSERT INTO audit_logs (action, context_area, previous_value, new_value, user_identity)
       VALUES (

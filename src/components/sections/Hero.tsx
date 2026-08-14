@@ -4,9 +4,19 @@ import React, { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics/track";
-import { getValidatedClaim } from "@/config/claims";
 import { useCms } from "@/context/CmsContext";
+import type { ResolvedClaimsMap } from "@/lib/claims/types";
 
+/**
+ * Hero — Public-facing hero section.
+ *
+ * Claims governance:
+ * - Claims (experience-years, debts-liquidated, etc.) must arrive via
+ *   the `resolvedClaims` prop, pre-resolved by the server component parent.
+ * - If a claim is null (not validated or not legally approved), its entire
+ *   metric cell is hidden — no fallback number is shown.
+ * - CMS fields control layout/copy; they cannot override governed claims.
+ */
 interface HeroProps {
   title?: string;
   subtitle?: string;
@@ -15,6 +25,12 @@ interface HeroProps {
   ctaId?: string;
   placement?: string;
   formComponent?: ReactNode;
+  /**
+   * Pre-resolved claims from Neon DB (server-side).
+   * null = claim not validated/approved → do not render.
+   * Passing undefined means no claims available (hide all metric cells).
+   */
+  resolvedClaims?: ResolvedClaimsMap;
 }
 
 export function Hero({
@@ -25,23 +41,44 @@ export function Hero({
   ctaId = "hero_cta",
   placement = "hero",
   formComponent,
+  resolvedClaims,
 }: HeroProps) {
   const { getSection } = useCms();
   const cms = getSection("home_hero");
 
-  const finalTitle = title || cms.title || "Una alternativa real para resolver tus deudas sin poner en riesgo tu patrimonio";
-  const finalSubtitle = subtitle || cms.subtitle || "Analizamos tu caso y diseñamos un plan de ahorro a tu medida para negociar descuentos directos con tus acreedores.";
+  const finalTitle =
+    title ||
+    cms.title ||
+    "Una alternativa real para resolver tus deudas sin poner en riesgo tu patrimonio";
+  const finalSubtitle =
+    subtitle ||
+    cms.subtitle ||
+    "Analizamos tu caso y diseñamos un plan de ahorro a tu medida para negociar descuentos directos con tus acreedores.";
   const finalCtaText = ctaText || cms.primaryCtaText || "Revisar mi caso";
   const finalCtaHref = ctaHref || cms.primaryCtaUrl || "/formulario";
 
-  const expYears = getValidatedClaim("experience-years", "+15");
-  const debtsLiq = getValidatedClaim("debts-liquidated", "+350 mil");
-  const countries = getValidatedClaim("countries-operating", "6");
-  const credits = getValidatedClaim("credits-placed", "+50 mil");
-  const minDebtClaim = getValidatedClaim(
-    "minimum-debt",
-    "Deudas desde $50,000 MXN · sin consulta al buró en este paso"
-  );
+  // ─── Governed Claims ──────────────────────────────────────────────────────
+  // Each claim is null if not validated+approved → hide the metric cell.
+  // CMS badge is editorial copy only — it cannot override a governed claim.
+  const expYears = resolvedClaims?.["experience-years"] ?? null;
+  const debtsLiq = resolvedClaims?.["debts-liquidated"] ?? null;
+  const countries = resolvedClaims?.["countries-operating"] ?? null;
+  const credits = resolvedClaims?.["credits-placed"] ?? null;
+
+  // "minimum-debt" is also a governed claim.
+  // Badge: CMS badge is editorial. Only show minimum-debt claim if approved.
+  const minDebtClaim = resolvedClaims?.["minimum-debt"] ?? null;
+  // CMS badge is for editorial text (e.g. "Nuevo programa 2026").
+  // It does NOT override the minimum-debt claim.
+  const badgeText = cms.badge || minDebtClaim;
+
+  // Count how many metric cells have approved claims
+  const metricCells = [
+    expYears && { value: expYears, label: "años de experiencia" },
+    debtsLiq && { value: debtsLiq, label: "deudas liquidadas" },
+    countries && { value: countries, label: "países de operación" },
+    credits && { value: credits, label: "créditos colocados" },
+  ].filter(Boolean) as { value: string; label: string }[];
 
   const bgStyleClass =
     cms.backgroundStyle === "dark-purple"
@@ -84,7 +121,11 @@ export function Hero({
       data-cms-section="home_hero"
       className={`w-full relative overflow-hidden border-b border-[#E7E3EC] transition-colors duration-300 ${bgStyleClass}`}
       id="hero-section"
-      style={cms.customColors?.backgroundColor ? { backgroundColor: cms.customColors.backgroundColor } : undefined}
+      style={
+        cms.customColors?.backgroundColor
+          ? { backgroundColor: cms.customColors.backgroundColor }
+          : undefined
+      }
     >
       {/* =====================================================================
           FULL-BLEED HERO BACKGROUND PHOTOGRAPHY (MIRRORED / MODO ESPEJO)
@@ -142,14 +183,16 @@ export function Hero({
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-[40px] lg:gap-[48px] items-start">
           {/* Left Column: Message + CTA + Metrics */}
           <div className="flex flex-col gap-[22px]">
-            {/* Eligibility Badge */}
-            <div
-              data-cms-field="badge"
-              className="inline-flex self-start items-center gap-[9px] bg-[#E9F8FA]/95 border border-[#BEE7ED] text-[#16606B] text-[13px] font-bold h-[36px] px-[16px] rounded-full shadow-2xs backdrop-blur-xs transition-all duration-300"
-            >
-              <span className="w-[7px] h-[7px] rounded-full bg-[#1E8A9B]" />
-              <span>{cms.badge || minDebtClaim}</span>
-            </div>
+            {/* Eligibility Badge — only shown if there is text to display */}
+            {badgeText && (
+              <div
+                data-cms-field="badge"
+                className="inline-flex self-start items-center gap-[9px] bg-[#E9F8FA]/95 border border-[#BEE7ED] text-[#16606B] text-[13px] font-bold h-[36px] px-[16px] rounded-full shadow-2xs backdrop-blur-xs transition-all duration-300"
+              >
+                <span className="w-[7px] h-[7px] rounded-full bg-[#1E8A9B]" />
+                <span>{badgeText}</span>
+              </div>
+            )}
 
             {/* Headline H1 */}
             <h1
@@ -167,7 +210,11 @@ export function Hero({
             <p
               data-cms-field="subtitle"
               className="text-[17px] md:text-[18px] lg:text-[19px] leading-[1.6] text-[#3A3344] max-w-[560px] m-0 transition-all duration-300"
-              style={cms.customColors?.textColor ? { color: cms.customColors.textColor, opacity: 0.85 } : undefined}
+              style={
+                cms.customColors?.textColor
+                  ? { color: cms.customColors.textColor, opacity: 0.85 }
+                  : undefined
+              }
             >
               {finalSubtitle}
             </p>
@@ -185,7 +232,11 @@ export function Hero({
                   })
                 }
                 className={`${primaryBtnClass} transition-all duration-300`}
-                style={cms.customColors?.primaryColor ? { backgroundColor: cms.customColors.primaryColor } : undefined}
+                style={
+                  cms.customColors?.primaryColor
+                    ? { backgroundColor: cms.customColors.primaryColor }
+                    : undefined
+                }
               >
                 {finalCtaText}
               </Link>
@@ -199,58 +250,44 @@ export function Hero({
             </div>
 
             {/* =================================================================
-                METRICS CARD (4 Columns with Clean Dividers & No Line Wrapping)
+                METRICS CARD — only rendered if at least one claim is approved
                 ================================================================= */}
-            <div className="relative mt-[10px] pt-[8px]">
-              <div className="bg-white/95 backdrop-blur-md border border-[#E7E3EC] rounded-[16px] shadow-sm overflow-hidden">
-                <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[#EAE5EF]">
-                  {/* Col 1 */}
-                  <div className="p-[14px] sm:p-[16px] flex flex-col justify-center">
-                    <div className="text-[24px] sm:text-[26px] xl:text-[30px] font-extrabold tracking-[-0.025em] text-[#5B2C72] whitespace-nowrap leading-none">
-                      {expYears}
-                    </div>
-                    <div className="text-[12.5px] sm:text-[13px] text-[#5B5266] leading-tight mt-1.5 font-medium">
-                      años de experiencia
-                    </div>
-                  </div>
-
-                  {/* Col 2 */}
-                  <div className="p-[14px] sm:p-[16px] flex flex-col justify-center">
-                    <div className="text-[24px] sm:text-[26px] xl:text-[30px] font-extrabold tracking-[-0.025em] text-[#5B2C72] whitespace-nowrap leading-none">
-                      {debtsLiq}
-                    </div>
-                    <div className="text-[12.5px] sm:text-[13px] text-[#5B5266] leading-tight mt-1.5 font-medium">
-                      deudas liquidadas
-                    </div>
-                  </div>
-
-                  {/* Col 3 */}
-                  <div className="p-[14px] sm:p-[16px] flex flex-col justify-center">
-                    <div className="text-[24px] sm:text-[26px] xl:text-[30px] font-extrabold tracking-[-0.025em] text-[#5B2C72] whitespace-nowrap leading-none">
-                      {countries}
-                    </div>
-                    <div className="text-[12.5px] sm:text-[13px] text-[#5B5266] leading-tight mt-1.5 font-medium">
-                      países de operación
-                    </div>
-                  </div>
-
-                  {/* Col 4 */}
-                  <div className="p-[14px] sm:p-[16px] flex flex-col justify-center">
-                    <div className="text-[24px] sm:text-[26px] xl:text-[30px] font-extrabold tracking-[-0.025em] text-[#5B2C72] whitespace-nowrap leading-none">
-                      {credits}
-                    </div>
-                    <div className="text-[12.5px] sm:text-[13px] text-[#5B5266] leading-tight mt-1.5 font-medium">
-                      créditos colocados
-                    </div>
+            {metricCells.length > 0 && (
+              <div className="relative mt-[10px] pt-[8px]">
+                <div className="bg-white/95 backdrop-blur-md border border-[#E7E3EC] rounded-[16px] shadow-sm overflow-hidden">
+                  <div
+                    className={`grid divide-y lg:divide-y-0 lg:divide-x divide-[#EAE5EF] ${
+                      metricCells.length === 4
+                        ? "grid-cols-2 lg:grid-cols-4"
+                        : metricCells.length === 3
+                        ? "grid-cols-1 sm:grid-cols-3"
+                        : metricCells.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-1"
+                    }`}
+                  >
+                    {metricCells.map(({ value, label }) => (
+                      <div
+                        key={label}
+                        className="p-[14px] sm:p-[16px] flex flex-col justify-center"
+                      >
+                        <div className="text-[24px] sm:text-[26px] xl:text-[30px] font-extrabold tracking-[-0.025em] text-[#5B2C72] whitespace-nowrap leading-none">
+                          {value}
+                        </div>
+                        <div className="text-[12.5px] sm:text-[13px] text-[#5B5266] leading-tight mt-1.5 font-medium">
+                          {label}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
 
-              {/* High Contrast Legible Footnote */}
-              <div className="font-mono text-[11.5px] text-[#5B5266] tracking-[0.01em] pt-2 px-1">
-                Cifras institucionales sujetas a actualización
+                {/* High Contrast Legible Footnote */}
+                <div className="font-mono text-[11.5px] text-[#5B5266] tracking-[0.01em] pt-2 px-1">
+                  Cifras institucionales sujetas a actualización
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Right Column: Prequalification Form Card */}

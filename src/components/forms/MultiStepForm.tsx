@@ -333,12 +333,17 @@ export function MultiStepForm() {
   };
 
   if (studioConfig.mode === "html_embed") {
+    // SECURITY: Raw HTML embed execution is disabled in production.
+    // html_embed mode creates a stored XSS vector: admin CMS → public frontend.
+    // To re-enable, this requires: feature flag (FORM_HTML_EMBED_ENABLED=true),
+    // SuperAdmin role, DOMPurify sanitization, and security review.
+    // Configure the form via provider/formId fields instead.
     return (
       <div className="bg-white border border-[#C9C1D4] rounded-[20px] p-[24px] sm:p-[28px] lg:p-[32px] shadow-xs flex flex-col gap-4">
-        <div
-          className="w-full overflow-auto rounded-xl"
-          dangerouslySetInnerHTML={{ __html: studioConfig.htmlEmbedCode || "" }}
-        />
+        <div className="bg-[#FFF9EC] border border-[#F0C050] rounded-xl p-4 text-[14px] text-[#7A5A00]">
+          <strong>Configuración de formulario no disponible.</strong><br />
+          El modo <code className="font-mono text-[12px]">html_embed</code> está deshabilitado en producción por razones de seguridad. Configura el formulario usando un proveedor aprobado (HubSpot, interno) en el Admin → Form Studio.
+        </div>
       </div>
     );
   }
