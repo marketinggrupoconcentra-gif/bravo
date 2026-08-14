@@ -5,8 +5,8 @@ import { FinalCta } from "@/components/sections/FinalCta";
 import { DataProtectionIcon, ReviewCaseIcon } from "@/components/icons/bravo";
 
 export const metadata: Metadata = {
-  title: "Seguridad de tus Datos y Encriptación SSL | Bravo México",
-  description: "Conoce los protocolos de encriptación SSL de 256 bits, cumplimiento LFPDPPP y estándares de ciberseguridad que protegen tu información en Bravo México.",
+  title: "Seguridad de tus Datos y Privacidad | Bravo México",
+  description: "Conoce cómo Bravo México protege tu información personal: conexión cifrada SSL/TLS, cumplimiento LFPDPPP y Aviso de Privacidad Integral.",
 };
 
 export default function SeguridadDatosPage() {
@@ -32,7 +32,7 @@ export default function SeguridadDatosPage() {
             </h1>
 
             <p className="m-0 text-[16.5px] sm:text-[18px] leading-[1.65] text-[#5B5266]">
-              Tu tranquilidad no solo es financiera: la confidencialidad de tu información personal y crediticia está respaldada por tecnología de grado bancario y estricto apego legal.
+              Tu tranquilidad no solo es financiera: la confidencialidad de tu información personal y crediticia está respaldada por una conexión cifrada y estricto apego a la legislación mexicana de protección de datos.
             </p>
           </header>
 
@@ -42,9 +42,9 @@ export default function SeguridadDatosPage() {
                 <div className="w-10 h-10 rounded-xl bg-[#F5EDF9] text-[#5B2C72] flex items-center justify-center">
                   <DataProtectionIcon size={20} />
                 </div>
-                <h3 className="m-0 text-[18px] font-bold text-[#17131F]">Encriptación SSL de 256 bits</h3>
+                <h3 className="m-0 text-[18px] font-bold text-[#17131F]">Conexión cifrada SSL/TLS</h3>
                 <p className="m-0 text-[13.5px] text-[#5B5266] leading-relaxed">
-                  Toda la comunicación entre tu navegador y nuestros servidores viaja cifrada mediante certificados SSL/TLS de alta seguridad.
+                  Toda la comunicación entre tu navegador y nuestros servidores viaja cifrada mediante certificados SSL/TLS. Protegemos tus datos conforme a nuestro Aviso de Privacidad.
                 </p>
               </div>
 

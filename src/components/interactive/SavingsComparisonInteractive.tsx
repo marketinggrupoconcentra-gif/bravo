@@ -175,7 +175,7 @@ export function SavingsComparisonInteractive() {
               <div className="flex flex-col items-center justify-center gap-1.5 text-[11px] text-[#DDCBE6] text-center mt-2">
                 <div className="flex items-center gap-1.5">
                   <CheckIcon size={13} className="text-[#5ECBDB]" />
-                  <span>Evaluación confidencial y sin impacto en historial crediticio en este paso</span>
+                  <span>Esta evaluación inicial no consulta tu Buró de Crédito</span>
                 </div>
               </div>
             </div>
