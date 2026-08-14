@@ -20,6 +20,10 @@ import type { ResolvedClaim, ResolvedClaimsMap } from "@/lib/claims/types";
 
 export type { ResolvedClaim, ResolvedClaimsMap } from "@/lib/claims/types";
 
+// Neon sql tag returns QueryResult (not generic) — rows are typed via assertion
+interface ClaimRow { value: string; }
+interface ClaimMapRow { id: string; value: string; }
+
 /**
  * Resolve a single claim from the database.
  * Returns the claim value if VALIDATED and legally approved; null otherwise.
@@ -27,15 +31,16 @@ export type { ResolvedClaim, ResolvedClaimsMap } from "@/lib/claims/types";
 export async function resolveClaimFromDB(id: string): Promise<ResolvedClaim> {
   try {
     await initDbSchema();
-    const result = await sql<{ value: string }[]>`
+    const result = await sql`
       SELECT value FROM claims_registry 
       WHERE id = ${id} 
         AND status = 'VALIDATED' 
         AND legal_approved = true
       LIMIT 1
     `;
-    if (result.length > 0) {
-      return result[0].value;
+    const rows = result as unknown as ClaimRow[];
+    if (rows.length > 0) {
+      return rows[0].value;
     }
     return null;
   } catch (err) {
@@ -59,13 +64,14 @@ export async function resolveClaimsMapFromDB(
 
   try {
     await initDbSchema();
-    const result = await sql<{ id: string; value: string }[]>`
+    const result = await sql`
       SELECT id, value FROM claims_registry
       WHERE id = ANY(${ids}::text[])
         AND status = 'VALIDATED'
         AND legal_approved = true
     `;
-    for (const row of result) {
+    const rows = result as unknown as ClaimMapRow[];
+    for (const row of rows) {
       map[row.id] = row.value;
     }
   } catch (err) {
