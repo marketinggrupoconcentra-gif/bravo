@@ -17,17 +17,28 @@ let failed = 0;
 
 import fs from "fs";
 import path from "path";
+import { neon } from "@neondatabase/serverless";
+
+if (process.env.ALLOW_GOVERNANCE_MUTATIONS !== "true") {
+  console.error("❌ ERROR: ALLOW_GOVERNANCE_MUTATIONS=true must be explicitly set to run the QA suite.");
+  process.exit(1);
+}
+
+const QA_RUN_ID = `BRAVO_QA_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+console.log(`\n🧪 Starting Governance QA. Run ID: ${QA_RUN_ID}`);
 
 // Load .env.local if needed
-if (!process.env.ADMIN_SECRET_KEY) {
-  try {
-    const envFile = fs.readFileSync(path.join(process.cwd(), ".env.local"), "utf8");
+try {
+  const envFile = fs.readFileSync(path.join(process.cwd(), ".env.local"), "utf8");
+  if (!process.env.ADMIN_SECRET_KEY) {
     const match = envFile.match(/^ADMIN_SECRET_KEY=["']?(.*?)["']?$/m);
-    if (match) {
-      process.env.ADMIN_SECRET_KEY = match[1];
-    }
-  } catch {}
-}
+    if (match) process.env.ADMIN_SECRET_KEY = match[1];
+  }
+  if (!process.env.DATABASE_URL) {
+    const matchDB = envFile.match(/^DATABASE_URL=["']?(.*?)["']?$/m);
+    if (matchDB) process.env.DATABASE_URL = matchDB[1];
+  }
+} catch {}
 
 function ok(label) {
   console.log(`  ✅ ${label}`);
@@ -123,7 +134,7 @@ async function testAdminAuth() {
   }
 }
 
-await testAdminAuth();
+// testAdminAuth will be called in runAllTests
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Landing Page 404 / 200 Behavior
@@ -164,7 +175,7 @@ async function testLandingPages() {
   }
 }
 
-await testLandingPages();
+// testLandingPages will be called in runAllTests
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Lead API Validation
@@ -173,7 +184,7 @@ console.log("\n── 3. Lead API Validation ───────────�
 
 async function testLeadValidation() {
   // Missing required fields → 400
-  const r1 = await post("/api/leads", { nombre: "Test" });
+  const r1 = await post("/api/leads", { nombre: `Test QA ${QA_RUN_ID}` });
   if (r1.status === 400) {
     ok("POST /api/leads missing celular → 400");
   } else {
@@ -182,7 +193,7 @@ async function testLeadValidation() {
 
   // Invalid phone → 400
   const r2 = await post("/api/leads", {
-    nombre: "Test User",
+    nombre: `Test QA ${QA_RUN_ID}`,
     celular: "123", // too short
   });
   if (r2.status === 400) {
@@ -193,7 +204,7 @@ async function testLeadValidation() {
 
   // Invalid email → 400
   const r3 = await post("/api/leads", {
-    nombre: "Test User",
+    nombre: `Test QA ${QA_RUN_ID}`,
     celular: "5512345678",
     email: "not-an-email",
   });
@@ -205,7 +216,7 @@ async function testLeadValidation() {
 
   // Attempt to inject webhookConfig (should be ignored, but test safe routing)
   const r4 = await post("/api/leads", {
-    nombre: "Test Valid User",
+    nombre: `Test QA ${QA_RUN_ID}`,
     celular: "5512345678",
     webhookConfig: { url: "http://malicious.com" }
   });
@@ -222,7 +233,7 @@ async function testLeadValidation() {
   }
 }
 
-await testLeadValidation();
+// testLeadValidation will be called in runAllTests
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Rate Limiter Regression Test
@@ -231,30 +242,57 @@ console.log("\n── 4. Rate Limiter ──────────────
 
 async function testRateLimiter() {
   const testIp = `192.168.100.${Math.floor(Math.random() * 255)}`;
-  let lastStatus = 0;
   
   // The global limiter is set to 5 requests per minute.
   // We send 6 requests from the same IP. The 6th should be 429.
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 1; i <= 5; i++) {
     const r = await fetch(`${BASE}/api/leads`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-forwarded-for": testIp,
       },
-      body: JSON.stringify({ nombre: `Test ${i}`, celular: "5512345678" })
+      body: JSON.stringify({ nombre: `Test QA ${QA_RUN_ID} ${i}`, celular: "5512345678" })
     });
-    lastStatus = r.status;
+    if (r.status === 429) {
+      fail(`POST /api/leads request ${i} was rate limited too early`);
+      return;
+    }
   }
 
-  if (lastStatus === 429) {
+  const r6 = await fetch(`${BASE}/api/leads`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-forwarded-for": testIp,
+    },
+    body: JSON.stringify({ nombre: `Test QA ${QA_RUN_ID} 6`, celular: "5512345678" })
+  });
+
+  if (r6.status === 429) {
     ok("POST /api/leads same IP threshold → 429 (Rate limiter is working)");
   } else {
-    fail("POST /api/leads 6th request from same IP should be 429", `got ${lastStatus}`);
+    fail("POST /api/leads 6th request from same IP should be 429", `got ${r6.status}`);
+  }
+
+  const testIp2 = `192.168.101.${Math.floor(Math.random() * 255)}`;
+  const r7 = await fetch(`${BASE}/api/leads`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-forwarded-for": testIp2,
+    },
+    body: JSON.stringify({ nombre: `Test QA ${QA_RUN_ID} 7`, celular: "5512345678" })
+  });
+
+  if (r7.status !== 429) {
+    ok("POST /api/leads different IP is not blocked");
+  } else {
+    fail("POST /api/leads different IP was incorrectly blocked");
   }
 }
 
-await testRateLimiter();
+// testRateLimiter will be called in runAllTests
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. SSRF / Security Checks
@@ -271,7 +309,7 @@ async function testSecurity() {
   }
 }
 
-await testSecurity();
+// testSecurity will be called in runAllTests
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. Claims Governance — Status Validation
@@ -332,17 +370,38 @@ async function testClaimsValidation() {
   }
 }
 
-await testClaimsValidation();
+// testClaimsValidation will be called in runAllTests
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Results
 // ─────────────────────────────────────────────────────────────────────────────
-console.log(`\n${"─".repeat(60)}`);
-console.log(`Results: ${passed} passed, ${failed} failed`);
-if (failed > 0) {
-  console.log("⚠️  Some tests failed. See details above.");
-  process.exit(1);
-} else {
-  console.log("✅ All QA tests passed.");
-  process.exit(0);
+async function runAllTests() {
+  try {
+    await testAdminAuth();
+    await testLandingPages();
+    await testLeadValidation();
+    await testRateLimiter();
+    await testSecurity();
+    await testClaimsValidation();
+
+    console.log(`\n${"─".repeat(60)}`);
+    console.log(`Results: ${passed} passed, ${failed} failed`);
+    if (failed > 0) {
+      console.log("⚠️  Some tests failed. See details above.");
+      process.exitCode = 1;
+    } else {
+      console.log("✅ All QA tests passed.");
+    }
+  } finally {
+    console.log(`\n🧹 Cleaning up test leads for run ID: ${QA_RUN_ID}`);
+    try {
+      const sql = neon(process.env.DATABASE_URL);
+      await sql`DELETE FROM leads WHERE nombre LIKE ${'%' + QA_RUN_ID + '%'}`;
+      console.log(`  ✅ Test leads deleted.`);
+    } catch (e) {
+      console.error(`  ❌ Failed to clean up test leads: ${e.message}`);
+    }
+  }
 }
+
+await runAllTests();

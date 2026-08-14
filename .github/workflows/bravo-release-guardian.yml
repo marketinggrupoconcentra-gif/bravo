@@ -35,9 +35,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      ADMIN_SECRET_KEY: ${{ secrets.ADMIN_SECRET_KEY }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_ADMIN_SECRET_KEY: ${{ secrets.TEST_ADMIN_SECRET_KEY }}
+      TEST_SESSION_SECRET: ${{ secrets.TEST_SESSION_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,12 +71,27 @@ jobs:
       - name: Governance QA
         shell: bash
         run: |
-          if [ -z "$DATABASE_URL" ] || [ -z "$ADMIN_SECRET_KEY" ]; then
-            echo "::warning::DATABASE_URL or ADMIN_SECRET_KEY is not configured in GitHub Actions secrets. Governance QA skipped."
+          if [ -z "$TEST_DATABASE_URL" ] || [ -z "$TEST_ADMIN_SECRET_KEY" ]; then
+            echo "::error::TEST_DATABASE_URL or TEST_ADMIN_SECRET_KEY is not configured in GitHub Actions secrets. Governance QA cannot execute safely."
             echo "### Governance QA" >> "$GITHUB_STEP_SUMMARY"
-            echo "Skipped because required GitHub Actions secrets are not configured." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
+            echo "FAILED: Required TEST_ GitHub Actions secrets are not configured." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
+
+          export DATABASE_URL="$TEST_DATABASE_URL"
+          export ADMIN_SECRET_KEY="$TEST_ADMIN_SECRET_KEY"
+          export SESSION_SECRET="$TEST_SESSION_SECRET"
+          export INTELIX_API_KEY=""
+          export META_CAPI_TOKEN=""
+          export META_PIXEL_ID=""
+          export GOOGLE_ADS_CONVERSION_ID=""
+          export GOOGLE_ADS_LABEL=""
+          export ALLOW_GOVERNANCE_MUTATIONS="true"
+
+          echo "### Governance QA" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Governance QA: EXECUTED" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Database environment: TEST / ISOLATED" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Production integrations: DISABLED" >> "$GITHUB_STEP_SUMMARY"
 
           pnpm dev > /tmp/bravo-guardian-dev.log 2>&1 &
           DEV_PID=$!
