@@ -52,3 +52,6 @@ temp-unzip-tablero/
 !public/**/*.png
 
 .vercel
+
+.env*
+.vercel
