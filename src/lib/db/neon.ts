@@ -1,12 +1,13 @@
 import { neon } from "@neondatabase/serverless";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || "";
 
-if (!connectionString) {
-  throw new Error("DATABASE_URL must be set in environment variables.");
-}
-
-export const sql = neon(connectionString);
+// Delay error so Next.js build doesn't crash during static analysis
+export const sql = connectionString 
+  ? neon(connectionString) 
+  : ((...args: any[]) => {
+      throw new Error("DATABASE_URL must be set in environment variables.");
+    }) as ReturnType<typeof neon>;
 
 let schemaInitialized = false;
 
