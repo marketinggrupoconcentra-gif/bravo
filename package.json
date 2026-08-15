@@ -10,7 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "test:governance": "node scripts/qa-governance.mjs"
+    "test:governance": "node scripts/qa-governance-runner.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
