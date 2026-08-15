@@ -38,6 +38,7 @@ jobs:
       TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       TEST_ADMIN_SECRET_KEY: ${{ secrets.TEST_ADMIN_SECRET_KEY }}
       TEST_SESSION_SECRET: ${{ secrets.TEST_SESSION_SECRET }}
+      GOVERNANCE_TEST_DB_IDENTITY_SHA256: ${{ secrets.GOVERNANCE_TEST_DB_IDENTITY_SHA256 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,10 +72,10 @@ jobs:
       - name: Governance QA
         shell: bash
         run: |
-          if [ -z "$TEST_DATABASE_URL" ] || [ -z "$TEST_ADMIN_SECRET_KEY" ]; then
-            echo "::error::TEST_DATABASE_URL or TEST_ADMIN_SECRET_KEY is not configured in GitHub Actions secrets. Governance QA cannot execute safely."
+          if [ -z "$TEST_DATABASE_URL" ] || [ -z "$TEST_ADMIN_SECRET_KEY" ] || [ -z "$GOVERNANCE_TEST_DB_IDENTITY_SHA256" ]; then
+            echo "::error::TEST_DATABASE_URL, TEST_ADMIN_SECRET_KEY, or GOVERNANCE_TEST_DB_IDENTITY_SHA256 is not configured in GitHub Actions secrets. Governance QA cannot execute safely."
             echo "### Governance QA" >> "$GITHUB_STEP_SUMMARY"
-            echo "FAILED: Required TEST_ GitHub Actions secrets are not configured." >> "$GITHUB_STEP_SUMMARY"
+            echo "FAILED: Required TEST_ / governance identity GitHub Actions secrets are not configured." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -90,7 +91,7 @@ jobs:
 
           echo "### Governance QA" >> "$GITHUB_STEP_SUMMARY"
           echo "- Governance QA: EXECUTED" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Database environment: TEST / ISOLATED" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Database environment: TEST / ISOLATED / IDENTITY-VERIFIED" >> "$GITHUB_STEP_SUMMARY"
           echo "- Production integrations: DISABLED" >> "$GITHUB_STEP_SUMMARY"
 
           pnpm dev > /tmp/bravo-guardian-dev.log 2>&1 &
