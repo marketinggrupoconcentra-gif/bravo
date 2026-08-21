@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2e1739" />
+    <title>Bravo México | Revisa opciones para liquidar tus deudas</title>
+    <meta name="description" content="Comparte tu situación, conserva la información de tu simulación y recibe una revisión inicial de las alternativas que podrían aplicar para tu caso." />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Bravo México | Revisa tus opciones" />
+    <meta property="og:description" content="Una evaluación inicial clara, sin costo y con acompañamiento humano." />
+    <link rel="icon" href="./assets/bravo-logo-oficial.png" type="image/png" />
+    <link rel="preload" href="./assets/figtree-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./assets/bravo-hero-human.webp" as="image" type="image/webp" />
+    <link rel="stylesheet" href="./brand-system.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Qué tipo de deudas pueden revisarse?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "La revisión inicial contempla principalmente tarjetas de crédito, tarjetas departamentales y préstamos personales. Los créditos automotrices y otros productos requieren validación individual."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Qué ocurre después de enviar mis datos?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Un asesor revisa la información inicial y se comunica para conocer el contexto y explicar las alternativas que podrían aplicar."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body class="bravo-impact">
+    <a class="skip-link" href="#precalificar">Ir a la precalificación</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand-link" href="#inicio" aria-label="Bravo México, inicio">
+          <span class="brand-logo-lockup">
+            <img src="./assets/bravo-logo-oficial.png" alt="Bravo México" width="186" height="57" />
+          </span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Navegación principal">
+          <a href="#como-funciona" data-nav-index="01">Cómo funciona</a>
+          <a href="#simulador" data-nav-index="02">Simulador</a>
+          <a href="#preguntas" data-nav-index="03">Preguntas frecuentes</a>
+        </nav>
+
+        <a class="button button-small header-cta" href="#precalificar">Revisar mi caso</a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-navigation" aria-label="Abrir menú">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+        </button>
+      </div>
+
+      <nav id="mobile-navigation" class="mobile-nav" aria-label="Navegación móvil" hidden>
+        <a href="#como-funciona" data-nav-index="01">Cómo funciona</a>
+        <a href="#simulador" data-nav-index="02">Simulador</a>
+        <a href="#preguntas" data-nav-index="03">Preguntas frecuentes</a>
+        <a class="button" href="#precalificar">Revisar mi caso</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <div class="hero-wave hero-wave-one" aria-hidden="true"></div>
+        <div class="hero-wave hero-wave-two" aria-hidden="true"></div>
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow"><span></span> Programa de liquidación y ahorro en México</p>
+            <h1>Revisemos tu situación y conoce tus opciones reales</h1>
+            <p class="hero-subheadline">Cuéntanos brevemente tu situación. Conservaremos los datos de tu simulación para que no tengas que repetirlos y un asesor revisará qué alternativas podrían aplicar.</p>
+            <ul class="hero-trust" aria-label="Puntos de confianza">
+              <li><span class="status-dot"></span>Evaluación inicial sin costo</li>
+              <li><span class="status-dot"></span>Sin consulta automática al Buró</li>
+              <li><span class="status-dot"></span>Acompañamiento de un asesor</li>
+            </ul>
+            <div class="hero-mobile-gesture" aria-hidden="true"><span>Precalifica en 4 pasos</span><span>↓</span></div>
+          </div>
+
+          <div class="form-shell" id="precalificar">
+            <form class="qualification-form" novalidate data-endpoint="">
+              <div class="form-progress" aria-label="Paso 1 de 4: Monto aproximado">
+                <div class="progress-meta"><span>Paso 1 de 4</span><span>Monto aproximado</span></div>
+                <div class="progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1"><span style="width: 25%"></span></div>
+              </div>
+              <div class="step-panel">
+                <div class="form-heading"><p class="eyebrow">Primero, lo esencial</p><h2>¿Aproximadamente cuánto debes en total?</h2><p>Un aproximado es suficiente para empezar.</p></div>
+                <p class="loading-form" role="status">Preparando tu evaluación…</p>
+              </div>
+            </form>
+            <noscript><p class="noscript-note">Activa JavaScript para completar la precalificación de cuatro pasos.</p></noscript>
+          </div>
+
+          <figure class="hero-photo">
+            <img src="./assets/bravo-hero-human.webp" alt="Persona organizando sus notas y finanzas en casa" width="1264" height="848" />
+            <figcaption><strong>Empieza con un aproximado.</strong><span>No necesitas documentos en esta etapa.</span></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="trust-bar" aria-label="Señales de confianza">
+        <div class="container trust-bar-inner">
+          <p><span>✓</span> Evaluación inicial sin costo</p>
+          <p><span>✓</span> Tus respuestas se conservan durante el flujo</p>
+          <p><span>✓</span> Tus datos no se venden</p>
+        </div>
+      </section>
+
+      <section class="section benefits" aria-labelledby="benefits-title">
+        <div class="container">
+          <div class="reveal section-heading centered">
+            <p class="eyebrow">Una experiencia conectada</p>
+            <h2 id="benefits-title">Una sola historia, del simulador al seguimiento</h2>
+            <p>El monto, el plazo preferido y las respuestas de la precalificación viajan juntos hasta la confirmación.</p>
+          </div>
+          <div class="benefit-grid">
+            <article class="reveal benefit-item"><span class="line-icon" aria-hidden="true">01</span><h3>Simula sin repetir</h3><p>El monto exacto y el plazo preferido se agregan al formulario y aparecen en la revisión final.</p></article>
+            <article class="reveal benefit-item"><span class="line-icon" aria-hidden="true">02</span><h3>Estados comprensibles</h3><p>Diferenciamos entre un caso fuera del monto mínimo y uno que necesita validación individual.</p></article>
+            <article class="reveal benefit-item"><span class="line-icon" aria-hidden="true">03</span><h3>Decisión informada</h3><p>La revisión inicial no promete resultados: explica el siguiente paso con claridad.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section how-it-works" id="como-funciona" aria-labelledby="how-title">
+        <div class="container">
+          <div class="reveal section-heading split-heading">
+            <div><p class="eyebrow">Cómo funciona</p><h2 id="how-title">Un proceso ordenado, sin saltos</h2></div>
+            <p>La evaluación inicial sirve para entender tu situación. Tú conoces las condiciones antes de avanzar.</p>
+          </div>
+          <ol class="steps-grid">
+            <li><span class="step-number">01</span><div><h3>Cuéntanos tu situación</h3><p>Monto aproximado, tipo de deuda e institución. Sin documentos en este paso.</p></div></li>
+            <li><span class="step-number">02</span><div><h3>Revisamos tu caso</h3><p>Un asesor analiza la información inicial que compartiste.</p></div></li>
+            <li><span class="step-number">03</span><div><h3>Conoces tus opciones</h3><p>Te explicamos qué alternativas podrían aplicar y qué implica cada una.</p></div></li>
+            <li><span class="step-number">04</span><div><h3>Decides cómo continuar</h3><p>Solo si avanzas se solicitan documentos y autorizaciones adicionales.</p></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section simulator-section" id="simulador" aria-labelledby="simulator-title">
+        <div class="container simulator-grid">
+          <div class="reveal simulator-intro">
+            <p class="eyebrow">Simulador orientativo</p>
+            <h2 id="simulator-title">Simula tu plan de ahorro estimado</h2>
+            <p>Elige una deuda aproximada y un plazo preferido. Guardaremos ambos datos para completar tu revisión sin volver a preguntarlos.</p>
+            <figure class="simulator-photo"><img src="./assets/bravo-household-planning.webp" alt="Pareja revisando y organizando sus finanzas en casa con tranquilidad" width="1200" height="896" loading="lazy" /></figure>
+          </div>
+          <div class="reveal simulator-panel">
+            <div class="simulator-question"><label for="debt-simulator">¿Cuánto debes aproximadamente en total?</label><output id="simulator-amount" for="debt-simulator">$180,000</output></div>
+            <p class="simulator-helper" id="simulator-help">Mueve la barra o selecciona un monto rápido.</p>
+            <input class="simulator-range" id="debt-simulator" type="range" min="50000" max="1000000" step="10000" value="180000" aria-describedby="simulator-help simulator-disclaimer" />
+            <div class="simulator-scale" aria-hidden="true"><span>$50,000</span><span>$500,000</span><span>$1,000,000+</span></div>
+            <div class="quick-amounts" aria-label="Montos rápidos">
+              <button type="button" data-sim-amount="60000" aria-pressed="false">$60 mil</button><button type="button" data-sim-amount="120000" aria-pressed="false">$120 mil</button><button type="button" data-sim-amount="180000" aria-pressed="true">$180 mil</button><button type="button" data-sim-amount="280000" aria-pressed="false">$280 mil</button><button type="button" data-sim-amount="450000" aria-pressed="false">$450 mil</button><button type="button" data-sim-amount="800000" aria-pressed="false">$800 mil</button>
+            </div>
+            <fieldset class="term-selector">
+              <legend>Plazo preferido para tu plan de ahorro</legend>
+              <div><button type="button" data-sim-term="12" aria-pressed="false">12 meses</button><button type="button" data-sim-term="18" aria-pressed="false">18 meses</button><button type="button" data-sim-term="22" aria-pressed="true">22 meses</button><button type="button" data-sim-term="28" aria-pressed="false">28 meses</button></div>
+            </fieldset>
+            <div class="simulator-result" aria-live="polite">
+              <p class="eyebrow">Tu referencia inicial</p>
+              <div class="simulator-result-grid"><div><span>Deuda aproximada</span><strong id="simulator-result-amount">$180,000</strong></div><div><span>Plazo preferido</span><strong id="simulator-result-term">22 meses</strong></div></div>
+              <p>Rango de evaluación: <strong id="simulator-result-range">$100,000 a $249,999</strong></p>
+              <button class="button button-primary" type="button" data-use-simulator>Usar estos datos en mi precalificación</button>
+              <p class="simulator-saved" data-simulator-saved role="status" hidden>Listo. Monto y plazo agregados.</p>
+            </div>
+            <p class="simulator-disclaimer" id="simulator-disclaimer">Este simulador es orientativo. No calcula ni promete descuentos, aportaciones o resultados. Las condiciones dependen de la evaluación y de la negociación con cada institución.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section requirements" id="requisitos" aria-labelledby="requirements-title">
+        <div class="container requirements-panel">
+          <div class="reveal requirements-heading"><p class="eyebrow">Criterios de revisión</p><h2 id="requirements-title">Lo que necesitamos conocer para empezar</h2><p>Son criterios iniciales, no una aprobación automática. Un asesor confirma la compatibilidad del caso.</p></div>
+          <ul class="requirements-list">
+            <li><span aria-hidden="true">$</span><p><strong>Monto total.</strong> Deuda acumulada desde $50,000 MXN.</p><span aria-hidden="true">✓</span></li>
+            <li><span aria-hidden="true">↔</span><p><strong>Tipo de deuda.</strong> Tarjetas y préstamos personales; auto u otros requieren validación.</p><span aria-hidden="true">✓</span></li>
+            <li><span aria-hidden="true">◎</span><p><strong>Capacidad de ahorro.</strong> Ingresos recurrentes para una posible aportación mensual.</p><span aria-hidden="true">✓</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section human-review" aria-labelledby="human-title">
+        <div class="container human-review-grid">
+          <div class="reveal human-review-photo"><img src="./assets/bravo-household-planning.webp" alt="Personas revisando su situación financiera en casa" width="1200" height="896" loading="lazy" /></div>
+          <div class="reveal human-review-copy">
+            <p class="eyebrow">Revisión humana</p><h2 id="human-title">Tu caso no se decide con una sola respuesta</h2>
+            <p>Si eliges crédito automotriz u otro tipo de deuda, podrás continuar. Mostraremos un aviso de validación individual para no confundir “requiere revisión” con “no elegible”.</p>
+            <ul class="check-list"><li><span>✓</span><span>Respuestas conservadas al avanzar y regresar.</span></li><li><span>✓</span><span>Resumen completo antes de enviar.</span></li><li><span>✓</span><span>Estado de error con opción de reintento.</span></li></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section faq" id="preguntas" aria-labelledby="faq-title">
+        <div class="container faq-grid">
+          <div class="reveal faq-intro"><p class="eyebrow">Preguntas frecuentes</p><h2 id="faq-title">Respuestas claras antes de empezar</h2><p>El mismo mensaje en requisitos, formulario, simulador y seguimiento.</p><a class="button button-secondary" href="#precalificar">Revisar mi caso</a></div>
+          <div class="faq-list">
+            <details name="bravo-faq" open><summary><span>¿Qué tipo de deudas pueden revisarse?</span><span aria-hidden="true">+</span></summary><div><p>Principalmente tarjetas de crédito, tarjetas departamentales y préstamos personales. Los créditos automotrices y “otros” se pueden registrar, pero requieren validación individual. Créditos hipotecarios y empeños no se contemplan en esta evaluación pública.</p></div></details>
+            <details name="bravo-faq"><summary><span>¿Tiene costo la evaluación inicial?</span><span aria-hidden="true">+</span></summary><div><p>No. La revisión inicial es informativa y sin compromiso. Si existe una alternativa compatible, conocerás sus condiciones antes de decidir.</p></div></details>
+            <details name="bravo-faq"><summary><span>¿Qué ocurre después de enviar mis datos?</span><span aria-hidden="true">+</span></summary><div><p>Un asesor revisa la información inicial y se comunica mediante los datos que compartiste para entender el contexto y explicar las alternativas que podrían aplicar.</p></div></details>
+            <details name="bravo-faq"><summary><span>¿Qué pasa con los datos del simulador?</span><span aria-hidden="true">+</span></summary><div><p>Cuando eliges “Usar estos datos”, el monto exacto y el plazo preferido se conservan durante la sesión, se muestran en el formulario y aparecen en el resumen antes de enviar.</p></div></details>
+            <details name="bravo-faq"><summary><span>¿Esto afecta mi Buró de Crédito?</span><span aria-hidden="true">+</span></summary><div><p>Esta evaluación inicial no realiza una consulta automática. Una etapa posterior podría requerir autorizaciones adicionales, y cualquier implicación se explica antes de que decidas continuar.</p></div></details>
+            <details name="bravo-faq"><summary><span>¿Cómo se utiliza mi información?</span><span aria-hidden="true">+</span></summary><div><p>Se utiliza para revisar tu caso y dar seguimiento conforme al Aviso de Privacidad. No solicitamos claves bancarias en esta evaluación pública.</p></div></details>
+          </div>
+        </div>
+      </section>
+
+      <section class="section final-cta" id="final-cta">
+        <div class="container final-cta-inner">
+          <div class="final-cta-copy"><p class="eyebrow">Tu siguiente paso</p><h2>Empieza por entender qué opciones podrían aplicar</h2><p>Responde unas preguntas breves. Revisa todo antes de enviar y conserva el control de la decisión.</p></div>
+          <a class="button button-light" href="#precalificar">Revisar mi caso</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-top">
+        <div><a class="brand-logo-lockup brand-logo-lockup-footer" href="#inicio" aria-label="Bravo México, inicio"><img src="./assets/bravo-logo-oficial.png" alt="Bravo México" width="186" height="57" loading="lazy" /></a><p>Programa estructurado de ahorro mensual y negociación de deudas.</p></div>
+        <nav aria-label="Enlaces legales"><a href="https://bravo-virid.vercel.app/aviso-de-privacidad">Aviso de Privacidad</a><a href="https://bravo-virid.vercel.app/terminos-y-condiciones">Términos y Condiciones</a><a href="https://bravo-virid.vercel.app/derechos-arco">Derechos ARCO</a></nav>
+      </div>
+      <div class="container footer-legal"><p>Go Bravo Soluciones, S.A.P.I. de C.V. Bravo México opera como una reparadora e intermediaria de crédito privada e independiente. No es una entidad bancaria.</p><p>© 2026 Bravo México. Todos los derechos reservados.</p></div>
+    </footer>
+    <div class="mobile-sticky-cta is-hidden"><a class="button" href="#precalificar">Revisar mi caso</a></div>
+  </body>
+</html>
