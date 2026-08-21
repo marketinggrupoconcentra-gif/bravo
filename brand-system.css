@@ -1,0 +1,108 @@
+/*
+ * Bravo Digital Brand System — base reutilizable
+ * Tokens y patrones derivados de la identidad visible en bravo-virid.vercel.app.
+ */
+
+@font-face {
+  font-family: "Figtree";
+  src: url("./assets/figtree-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("./assets/source-serif-4-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+:root {
+  /* Brand */
+  --bravo-violet-900: #2e1739;
+  --bravo-violet-700: #5b2c72;
+  --bravo-violet-600: #7e4499;
+  --bravo-violet-400: #ab6cca;
+  --bravo-violet-50: #f5edf9;
+  --bravo-cyan-600: #1e8a9b;
+  --bravo-cyan-300: #5ecbdb;
+  --bravo-cyan-50: #e9f8fa;
+
+  /* Neutral */
+  --bravo-ink: #17131f;
+  --bravo-text: #3a3344;
+  --bravo-text-muted: #5b5266;
+  --bravo-text-faint: #8a8095;
+  --bravo-page: #f1eef3;
+  --bravo-surface: #ffffff;
+  --bravo-surface-soft: #fbfafc;
+  --bravo-surface-violet: #fbf8fc;
+  --bravo-border: #e7e3ec;
+  --bravo-border-soft: #f0edf3;
+  --bravo-border-strong: #c9c1d4;
+
+  /* Semantic */
+  --bravo-success: #157a5a;
+  --bravo-success-bg: #f1faf6;
+  --bravo-warning: #8b5c00;
+  --bravo-warning-bg: #fff9e8;
+  --bravo-error: #b02a24;
+  --bravo-error-bg: #fff9f8;
+  --bravo-info: #1e6d7b;
+  --bravo-info-bg: #edf9fb;
+
+  /* Typography */
+  --bravo-font-display: "Figtree", "Figtree Fallback", sans-serif;
+  --bravo-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bravo-font-editorial: "Source Serif 4", Georgia, serif;
+  --bravo-tracking-display: -0.035em;
+
+  /* Geometry and motion */
+  --bravo-radius-sm: 12px;
+  --bravo-radius-md: 20px;
+  --bravo-radius-lg: 28px;
+  --bravo-radius-pill: 999px;
+  --bravo-shadow-xs: 0 1px 2px rgba(23, 19, 31, 0.05);
+  --bravo-shadow-lg: 0 30px 80px rgba(46, 23, 57, 0.12), 0 8px 24px rgba(46, 23, 57, 0.06);
+  --bravo-focus-ring: 0 0 0 4px rgba(94, 203, 219, 0.38);
+  --bravo-motion-fast: 160ms;
+  --bravo-motion-base: 240ms;
+}
+
+/* Shared primitives that can be reused outside this landing. */
+.brand-logo-lockup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  min-height: 45px;
+  border-radius: 10px;
+  background: var(--bravo-violet-900);
+  padding: 7px 12px;
+  box-shadow: var(--bravo-shadow-xs);
+}
+
+.brand-logo-lockup img {
+  width: 93px;
+  height: auto;
+}
+
+.bravo-status {
+  display: flex;
+  gap: 12px;
+  border: 1px solid currentColor;
+  border-radius: var(--bravo-radius-sm);
+  padding: 14px 16px;
+}
+
+.bravo-status[data-state="success"] { color: var(--bravo-success); background: var(--bravo-success-bg); }
+.bravo-status[data-state="review"] { color: var(--bravo-warning); background: var(--bravo-warning-bg); }
+.bravo-status[data-state="error"] { color: var(--bravo-error); background: var(--bravo-error-bg); }
+.bravo-status[data-state="info"] { color: var(--bravo-info); background: var(--bravo-info-bg); }
+
+::selection {
+  background: var(--bravo-cyan-300);
+  color: var(--bravo-violet-900);
+}
